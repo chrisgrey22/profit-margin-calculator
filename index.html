@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Miami Trip Planner</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>Miami Trip Planner</h1>
+        <p>Build a realistic plan for your Miami getaway in minutes.</p>
+      </header>
+
+      <section class="card">
+        <h2>Trip Details</h2>
+        <form id="trip-form">
+          <div class="grid">
+            <label>
+              Number of travelers
+              <input id="travelers" type="number" min="1" value="2" required />
+            </label>
+
+            <label>
+              Number of days
+              <input id="days" type="number" min="1" value="4" required />
+            </label>
+
+            <label>
+              Total budget ($)
+              <input id="budget" type="number" min="100" value="2500" required />
+            </label>
+
+            <label>
+              Hotel preference
+              <select id="hotel-tier">
+                <option value="budget">Budget</option>
+                <option value="mid" selected>Mid-range</option>
+                <option value="luxury">Luxury</option>
+              </select>
+            </label>
+          </div>
+
+          <fieldset>
+            <legend>Interests</legend>
+            <div class="chips">
+              <label><input type="checkbox" value="beaches" checked /> Beaches</label>
+              <label><input type="checkbox" value="food" checked /> Food</label>
+              <label><input type="checkbox" value="nightlife" /> Nightlife</label>
+              <label><input type="checkbox" value="culture" /> Culture</label>
+              <label><input type="checkbox" value="outdoors" /> Outdoors</label>
+              <label><input type="checkbox" value="shopping" /> Shopping</label>
+            </div>
+          </fieldset>
+
+          <button type="submit">Generate Miami Plan</button>
+        </form>
+      </section>
+
+      <section class="card hidden" id="results">
+        <h2>Your Plan</h2>
+        <div id="summary"></div>
+        <h3>Suggested Daily Itinerary</h3>
+        <ol id="itinerary"></ol>
+        <h3>Packing Checklist</h3>
+        <ul id="checklist"></ul>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
