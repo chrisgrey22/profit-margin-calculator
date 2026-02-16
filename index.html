@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DV Scene Support | Officer Toolkit</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>Domestic Abuse Scene Support</h1>
+      <p>
+        Fast, trauma‑informed prompts to help officers assess risk, preserve evidence,
+        and plan immediate safeguarding.
+      </p>
+    </header>
+
+    <main>
+      <section class="panel emergency-panel">
+        <h2>Immediate Safety Check</h2>
+        <div class="safety-grid">
+          <label><input type="checkbox" data-priority="critical" /> Active threat at scene</label>
+          <label><input type="checkbox" data-priority="critical" /> Suspect still nearby / returning</label>
+          <label><input type="checkbox" data-priority="critical" /> Weapon present or mentioned</label>
+          <label><input type="checkbox" data-priority="high" /> Strangulation signs disclosed/observed</label>
+          <label><input type="checkbox" data-priority="high" /> Child in immediate danger</label>
+          <label><input type="checkbox" data-priority="high" /> Victim frightened to go home</label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Structured Risk Indicators</h2>
+        <p class="hint">Tick all that apply based on disclosure, observation, records, and witness account.</p>
+        <div class="risk-grid" id="risk-checklist">
+          <label><input type="checkbox" data-points="6" /> Escalation in frequency/severity over last 3 months</label>
+          <label><input type="checkbox" data-points="8" /> Attempted strangulation / suffocation</label>
+          <label><input type="checkbox" data-points="8" /> Threats to kill victim, children, or self</label>
+          <label><input type="checkbox" data-points="7" /> Suspect obsessive jealousy, stalking, or surveillance</label>
+          <label><input type="checkbox" data-points="6" /> Coercive control (isolation, monitoring, humiliation)</label>
+          <label><input type="checkbox" data-points="5" /> Sexual violence reported</label>
+          <label><input type="checkbox" data-points="5" /> Access to firearms/weapons</label>
+          <label><input type="checkbox" data-points="4" /> Separation recently occurred or planned</label>
+          <label><input type="checkbox" data-points="4" /> Pregnancy/recent birth (< 18 months)</label>
+          <label><input type="checkbox" data-points="4" /> Child direct victim or used to control victim</label>
+          <label><input type="checkbox" data-points="3" /> Substance misuse increasing volatility</label>
+          <label><input type="checkbox" data-points="3" /> Prior breaches of orders / bail / conditions</label>
+          <label><input type="checkbox" data-points="2" /> Financial abuse or intentional deprivation</label>
+          <label><input type="checkbox" data-points="2" /> Victim states: “I think they will seriously harm me”</label>
+        </div>
+      </section>
+
+      <section class="panel score-panel">
+        <h2>Live Risk Output</h2>
+        <div class="score-card">
+          <p class="score-label">Total score</p>
+          <p id="score">0</p>
+          <p id="risk-level" class="risk-level low">Standard Risk</p>
+        </div>
+        <div id="recommendations" class="recommendations"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Golden Hour Evidence Prompts</h2>
+        <ul>
+          <li>Capture body‑worn video walk-through and spontaneous statements.</li>
+          <li>Photograph visible injuries, damaged property, and disorder in context.</li>
+          <li>Record first account details verbatim (time, threats, exact words).</li>
+          <li>Secure digital evidence: messages, call logs, tracking apps, CCTV doorbells.</li>
+          <li>Document children’s presentation, demeanour, and safeguarding concerns.</li>
+          <li>Consider neighbours / bystanders as time-sensitive witnesses.</li>
+        </ul>
+      </section>
+
+      <section class="panel">
+        <h2>Victim-Centred Script Prompts</h2>
+        <ul>
+          <li>“What are you most afraid will happen in the next 24 hours?”</li>
+          <li>“Has the abuse changed recently in a way that worries you?”</li>
+          <li>“Has strangulation, choking, or breathing restriction happened?”</li>
+          <li>“Are there children or dependants you are worried about right now?”</li>
+          <li>“Do you feel safe staying here tonight?”</li>
+        </ul>
+      </section>
+
+      <section class="panel actions-panel">
+        <h2>Action Log</h2>
+        <textarea id="action-log" rows="7" placeholder="Record referrals made, safeguarding actions, arrest rationale, and handover notes..."></textarea>
+        <div class="buttons">
+          <button id="copy-btn">Copy Summary</button>
+          <button id="reset-btn" class="secondary">Reset Form</button>
+        </div>
+      </section>
+
+      <section class="panel disclaimer">
+        <h2>Operational note</h2>
+        <p>
+          This tool supports professional judgement and local policy. Always follow force procedures,
+          legal thresholds, and mandatory safeguarding pathways.
+        </p>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
