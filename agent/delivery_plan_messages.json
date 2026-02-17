@@ -1,0 +1,32 @@
+[
+  {
+    "id": "safe-neighbourhoods",
+    "title": "Safe Neighbourhoods",
+    "description": "Visible neighbourhood policing, proactive prevention, and rapid response that helps communities feel safe.",
+    "keywords": ["neighbourhood", "patrol", "visibility", "anti-social behaviour", "response", "community safety"]
+  },
+  {
+    "id": "victim-focused-service",
+    "title": "Victim-Focused Service",
+    "description": "A trauma-informed service where victims are supported, informed, and treated with dignity throughout their journey.",
+    "keywords": ["victim", "safeguarding", "support", "referral", "domestic abuse", "vulnerability"]
+  },
+  {
+    "id": "crime-prevention-and-problem-solving",
+    "title": "Crime Prevention and Problem Solving",
+    "description": "Use partnership and data-led activity to prevent crime, reduce harm, and resolve repeat demand.",
+    "keywords": ["prevention", "problem solving", "data", "partnership", "repeat", "intervention"]
+  },
+  {
+    "id": "workforce-and-wellbeing",
+    "title": "Workforce and Wellbeing",
+    "description": "Invest in leadership, wellbeing, and professional development so our people can deliver excellent service.",
+    "keywords": ["wellbeing", "training", "leadership", "development", "staff", "culture"]
+  },
+  {
+    "id": "trust-confidence-and-engagement",
+    "title": "Trust, Confidence and Engagement",
+    "description": "Build trust through openness, communication, ethical standards, and meaningful engagement with communities.",
+    "keywords": ["trust", "confidence", "engagement", "communications", "transparency", "public confidence"]
+  }
+]
