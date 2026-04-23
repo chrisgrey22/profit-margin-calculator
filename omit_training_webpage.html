@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OMIT Investigator Training & Operational Support</title>
+  <style>
+    :root {
+      --bg: #0b1f3a;
+      --card: #ffffff;
+      --muted: #4b5563;
+      --accent: #005ea5;
+      --accent-2: #00a0d2;
+      --ok: #006b3f;
+      --warn: #8a3b12;
+      --danger: #8f1735;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #111827;
+      background: #f3f4f6;
+      line-height: 1.5;
+    }
+    header {
+      background: linear-gradient(135deg, var(--bg), #133868);
+      color: white;
+      padding: 2rem 1rem;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    h1, h2, h3 { margin-top: 0; }
+    nav {
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0.75rem 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    nav a {
+      text-decoration: none;
+      color: var(--accent);
+      font-weight: bold;
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+    }
+    nav a:hover { background: #e8f2fc; }
+    section {
+      margin: 1rem 0;
+      background: var(--card);
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      padding: 1rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+    .tile {
+      padding: 0.85rem;
+      border: 1px solid #dbeafe;
+      border-radius: 8px;
+      background: #f8fbff;
+    }
+    .muted { color: var(--muted); }
+    .tag {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      margin-right: 0.4rem;
+      margin-bottom: 0.4rem;
+      background: #e5f3ff;
+      color: var(--accent);
+    }
+    details {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 0.8rem;
+      margin: 0.5rem 0;
+      background: #fafafa;
+    }
+    summary {
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .callout {
+      border-left: 5px solid var(--accent);
+      padding: 0.75rem;
+      background: #eff6ff;
+      border-radius: 6px;
+      margin: 0.75rem 0;
+    }
+    .ok { border-left-color: var(--ok); background: #eefbf2; }
+    .warn { border-left-color: var(--warn); background: #fff4ed; }
+    .danger { border-left-color: var(--danger); background: #fff1f5; }
+    button {
+      border: 0;
+      background: var(--accent);
+      color: white;
+      padding: 0.6rem 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover { background: #024a80; }
+    .question {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 0.8rem;
+      margin: 0.6rem 0;
+      background: #fff;
+    }
+    .result {
+      margin-top: 0.75rem;
+      font-weight: bold;
+    }
+    footer {
+      text-align: center;
+      color: #4b5563;
+      font-size: 0.9rem;
+      padding: 2rem 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>OMIT Investigator Training & Operational Support Page</h1>
+      <p>This page explains <strong>why</strong> OMIT matters, <strong>what</strong> officers are expected to do, and provides practical tools for daily use in investigations and custody workflows.</p>
+    </div>
+  </header>
+
+  <nav>
+    <div class="container">
+      <ul>
+        <li><a href="#why">Why OMIT</a></li>
+        <li><a href="#what">What to Do</a></li>
+        <li><a href="#pip2">PIP2 Building Blocks</a></li>
+        <li><a href="#apps-pace">APP + PACE</a></li>
+        <li><a href="#checklists">Shift Checklists</a></li>
+        <li><a href="#quiz">Knowledge Check</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section id="why">
+      <h2>1) The Strategic Why</h2>
+      <div class="grid">
+        <div class="tile"><h3>Community Risk</h3><p>More acquisitive offenders are likely to remain in the community. Without proactive case-building, repeat victimisation increases.</p></div>
+        <div class="tile"><h3>Operational Gap</h3><p>IOM prioritises high harm cohorts, while CID demand remains high. OMIT closes the gap for prolific burglary and robbery offenders.</p></div>
+        <div class="tile"><h3>Public Confidence</h3><p>Burglary and robbery drive fear and harm. Linked investigations and visible pursuit improve confidence and outcomes.</p></div>
+      </div>
+      <div class="callout ok">
+        <strong>OMIT Mission:</strong> Convert intelligence into evidence and outcomes through relentless, legally robust, multi-offence investigations.
+      </div>
+    </section>
+
+    <section id="what">
+      <h2>2) What We Are Asking Officers to Do</h2>
+      <span class="tag">Own IOM-linked burglary/robbery idents</span>
+      <span class="tag">Build linked multi-offence case files</span>
+      <span class="tag">Exploit forensics (prints, DNA, footwear)</span>
+      <span class="tag">Use custody as intervention point</span>
+      <span class="tag">Pursue TIC opportunities</span>
+
+      <details>
+        <summary>Operational expectations (click to expand)</summary>
+        <ul>
+          <li>Take active ownership of nominated offenders and linked offences across the BCU.</li>
+          <li>Create continuity between incidents to evidence patterns, MOs, and cross-scene links.</li>
+          <li>Prioritise footwear and print opportunities from scene to custody comparison.</li>
+          <li>Use every detention as an investigative trigger: checks, tasks, interview strategy, digital opportunities.</li>
+          <li>Work jointly with IOM coordinators, probation, custody, and forensic teams.</li>
+        </ul>
+      </details>
+    </section>
+
+    <section id="pip2">
+      <h2>3) PIP2 Building Blocks to Structure Investigations</h2>
+      <div class="grid">
+        <div class="tile"><h3>Decision Making</h3><p>Use proportionate, recorded rationale at every investigative stage.</p></div>
+        <div class="tile"><h3>Investigation Planning</h3><p>Set objectives, hypotheses, lines of enquiry, and review points.</p></div>
+        <div class="tile"><h3>Material Management</h3><p>Capture, retain, review, and disclose material lawfully and transparently.</p></div>
+        <div class="tile"><h3>Interview Strategy</h3><p>Plan suspect/witness strategy and evidence presentation to maximise outcomes.</p></div>
+        <div class="tile"><h3>Forensic Strategy</h3><p>Prioritise scene-to-custody opportunities, especially footwear and fingerprint linkage.</p></div>
+        <div class="tile"><h3>Case File Quality</h3><p>Present coherent linked offending narrative to support charging and court outcomes.</p></div>
+      </div>
+    </section>
+
+    <section id="apps-pace">
+      <h2>4) College of Policing APP + PACE: Mandatory Legal and Professional Baseline</h2>
+      <p class="muted">This training page supports practice but does not replace current force policy, APP, legal advice, or statutory guidance.</p>
+
+      <div class="callout warn">
+        <strong>Review requirement:</strong> Officers must review the relevant College of Policing APP on investigations, case-building, suspect and witness management, and custody-linked investigative processes.
+      </div>
+      <div class="callout danger">
+        <strong>PACE requirement:</strong> Investigative and custody decisions must be lawful, necessary, proportionate, and recorded in line with PACE and applicable Codes of Practice.
+      </div>
+
+      <details>
+        <summary>PACE reminder checklist (expand)</summary>
+        <ul>
+          <li>Grounds and necessity clearly documented for powers used.</li>
+          <li>Detention and custody decisions lawfully reviewed and auditable.</li>
+          <li>Interviews planned and conducted with safeguards and fairness.</li>
+          <li>Material handling and disclosure obligations actively managed.</li>
+          <li>Legal rights and entitlements explained and facilitated.</li>
+        </ul>
+      </details>
+    </section>
+
+    <section id="checklists">
+      <h2>5) Quick-Use Shift Checklists</h2>
+      <div class="grid">
+        <div class="tile">
+          <h3>Start of Shift</h3>
+          <ul>
+            <li>Identify active IOM-nominated subjects.</li>
+            <li>Check linked burglary/robbery idents.</li>
+            <li>Set top 3 disruption/evidence priorities.</li>
+          </ul>
+        </div>
+        <div class="tile">
+          <h3>At Scene</h3>
+          <ul>
+            <li>Footwear/print strategy set and task forensic opportunities early.</li>
+            <li>Cross-check with known offender patterns.</li>
+            <li>Capture investigative opportunities for linked offending.</li>
+          </ul>
+        </div>
+        <div class="tile">
+          <h3>Custody Trigger</h3>
+          <ul>
+            <li>Run linked offence checks immediately.</li>
+            <li>Request footwear comparison where relevant.</li>
+            <li>Set interview strategy and digital opportunities.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="quiz">
+      <h2>6) Interactive Knowledge Check</h2>
+      <div class="question">
+        <p><strong>Q1.</strong> OMIT is primarily designed to:</p>
+        <label><input type="radio" name="q1" value="a"> Replace IOM supervision functions</label><br>
+        <label><input type="radio" name="q1" value="b"> Convert IOM prioritisation into proactive evidential outcomes</label><br>
+        <label><input type="radio" name="q1" value="c"> Focus only on single-offence investigations</label>
+      </div>
+      <div class="question">
+        <p><strong>Q2.</strong> Which is a key forensic emphasis in this model?</p>
+        <label><input type="radio" name="q2" value="a"> Only CCTV downloads</label><br>
+        <label><input type="radio" name="q2" value="b"> Random intelligence checks</label><br>
+        <label><input type="radio" name="q2" value="c"> Footwear and fingerprint linkage across offences</label>
+      </div>
+      <div class="question">
+        <p><strong>Q3.</strong> In custody, officers should:</p>
+        <label><input type="radio" name="q3" value="a"> Wait for new crimes before acting</label><br>
+        <label><input type="radio" name="q3" value="b"> Treat detention as a proactive intervention point</label><br>
+        <label><input type="radio" name="q3" value="c"> Avoid linked offence checks</label>
+      </div>
+      <button id="markQuiz">Mark quiz</button>
+      <p class="result" id="result"></p>
+    </section>
+  </main>
+
+  <footer>
+    Built for staff development and operational support. Review with supervisors and align with the latest APP, PACE, and force policy updates.
+  </footer>
+
+  <script>
+    document.getElementById('markQuiz').addEventListener('click', () => {
+      const answers = { q1: 'b', q2: 'c', q3: 'b' };
+      let score = 0;
+      for (const [q, a] of Object.entries(answers)) {
+        const selected = document.querySelector(`input[name="${q}"]:checked`);
+        if (selected && selected.value === a) score += 1;
+      }
+      const out = document.getElementById('result');
+      out.textContent = `Score: ${score}/3 ${score === 3 ? '— Excellent, operationally ready.' : '— Review APP/PACE and try again.'}`;
+      out.style.color = score === 3 ? '#006b3f' : '#8a3b12';
+    });
+  </script>
+</body>
+</html>
