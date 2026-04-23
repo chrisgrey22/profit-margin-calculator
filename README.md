@@ -14,6 +14,7 @@ This repository now includes a lightweight drafting agent that converts operatio
 - `agent/delivery_plan_messages.json` – editable delivery-plan message map and keywords.
 - `agent/examples/update_example.txt` – sample operational update.
 - `agent/tests/test_internal_comms_agent.py` – automated checks.
+- `omit_training_webpage.html` – standalone interactive OMIT training/support page covering WHY, WHAT, PIP2 blocks, APP, and PACE reminders.
 
 ### Usage
 
