@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Happy 41st Birthday Emma!</title>
+  <style>
+    :root {
+      --dragon-red: #c8102e;
+      --deep-sea: #0b2f5b;
+      --shore-sand: #f4efe6;
+      --sunset: #ffb703;
+      --white: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0b2f5b 0%, #124f89 50%, #77b5d9 100%);
+      color: var(--white);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    .card {
+      width: min(760px, 95vw);
+      border-radius: 24px;
+      background: linear-gradient(160deg, rgba(200, 16, 46, 0.92), rgba(11, 47, 91, 0.95));
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .card::before,
+    .card::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(4px);
+      opacity: 0.2;
+      pointer-events: none;
+    }
+
+    .card::before {
+      width: 220px;
+      height: 220px;
+      background: var(--sunset);
+      right: -70px;
+      top: -70px;
+    }
+
+    .card::after {
+      width: 180px;
+      height: 180px;
+      background: #67d5ff;
+      left: -60px;
+      bottom: -60px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3rem);
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      margin-top: 10px;
+      font-size: clamp(1rem, 2.2vw, 1.3rem);
+      color: #ffe7ec;
+    }
+
+    .badge-row {
+      margin-top: 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-weight: 600;
+      backdrop-filter: blur(3px);
+    }
+
+    .message {
+      margin-top: 24px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 16px 18px;
+      line-height: 1.55;
+      font-size: 1.05rem;
+    }
+
+    .buttons {
+      margin-top: 22px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      border-radius: 999px;
+      padding: 11px 18px;
+      font-weight: 700;
+      transition: transform 0.18s ease, opacity 0.18s ease;
+    }
+
+    button:hover { transform: translateY(-2px); }
+    button:active { transform: translateY(1px) scale(0.98); }
+
+    .btn-primary {
+      background: var(--sunset);
+      color: #2b1c00;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.2);
+      color: var(--white);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .hidden-panel {
+      margin-top: 16px;
+      display: none;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px dashed rgba(255, 255, 255, 0.45);
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 1rem;
+    }
+
+    .show { display: block; }
+
+    .footer {
+      margin-top: 20px;
+      font-weight: 600;
+      color: #ffe9ee;
+    }
+
+    .wave {
+      display: inline-block;
+      animation: wiggle 1.8s infinite;
+      transform-origin: 70% 70%;
+    }
+
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(0deg); }
+      20% { transform: rotate(18deg); }
+      40% { transform: rotate(-8deg); }
+      60% { transform: rotate(14deg); }
+      80% { transform: rotate(-4deg); }
+    }
+
+    .confetti {
+      position: fixed;
+      width: 8px;
+      height: 12px;
+      top: -16px;
+      opacity: 0.9;
+      animation: fall 2.8s linear forwards;
+      z-index: 999;
+      pointer-events: none;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(104vh) rotate(500deg);
+        opacity: 0.2;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .card { padding: 22px; }
+      .message { font-size: 0.98rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Happy 41st Birthday, Emma! <span class="wave">🎉</span></h1>
+    <p class="subtitle">Dydd Gŵyl Hapus! Sending Swansea love all the way to Denmark.</p>
+
+    <div class="badge-row">
+      <span class="badge">🏴 Welsh-themed</span>
+      <span class="badge">🌊 Swansea spirit</span>
+      <span class="badge">🇩🇰 Warm wishes in Denmark</span>
+      <span class="badge">🐾 Big love to Elsie</span>
+    </div>
+
+    <section class="message">
+      Wishing you the most amazing 41st birthday on the 1st of March, Emma!<br /><br />
+      May your day be packed with laughter, cake, and all your favourite things.
+      From the Swansea coast to your home in Denmark, we are celebrating you and
+      sending a huge cwtch your way. We hope Elsie helps make your day extra special too!
+    </section>
+
+    <div class="buttons">
+      <button class="btn-primary" id="celebrateBtn">Launch Birthday Confetti</button>
+      <button class="btn-secondary" id="revealBtn">Reveal Special Note</button>
+    </div>
+
+    <aside class="hidden-panel" id="notePanel">
+      Dear Emma, you are loved beyond words. Here is to 41 and fabulous —
+      iechyd da, happiness, and beautiful new memories this year! 💖
+    </aside>
+
+    <p class="footer">From Chris, Shelly, Tilly, Blake and Isaac 💌</p>
+  </main>
+
+  <script>
+    const revealBtn = document.getElementById('revealBtn');
+    const notePanel = document.getElementById('notePanel');
+    const celebrateBtn = document.getElementById('celebrateBtn');
+
+    revealBtn.addEventListener('click', () => {
+      notePanel.classList.toggle('show');
+      revealBtn.textContent = notePanel.classList.contains('show')
+        ? 'Hide Special Note'
+        : 'Reveal Special Note';
+    });
+
+    function launchConfetti() {
+      const colors = ['#c8102e', '#ffffff', '#ffb703', '#7bdff2', '#1d3557'];
+      for (let i = 0; i < 130; i += 1) {
+        const piece = document.createElement('span');
+        piece.className = 'confetti';
+        piece.style.left = `${Math.random() * 100}vw`;
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = `${Math.random() * 0.5}s`;
+        piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+        document.body.appendChild(piece);
+
+        setTimeout(() => {
+          piece.remove();
+        }, 3200);
+      }
+    }
+
+    celebrateBtn.addEventListener('click', launchConfetti);
+  </script>
+</body>
+</html>
