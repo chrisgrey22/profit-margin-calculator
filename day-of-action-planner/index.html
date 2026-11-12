@@ -237,6 +237,11 @@ canvas#map.drag{cursor:grabbing}
           <h2 id="typH">Visit types to plan</h2>
           <div class="chips" id="typeChips"></div>
           <div class="row">
+            <div class="field"><label for="mRso">Offender visit on site</label><select id="mRso" data-t="rso"><option value="45">45 min</option><option value="60" selected>1 hour</option><option value="75">1h 15m</option><option value="90">1h 30m</option></select></div>
+            <div class="field"><label for="mBail">Bail check on site</label><select id="mBail" data-t="bail"><option value="5">5 min</option><option value="10" selected>10 min</option><option value="15">15 min</option><option value="20">20 min</option></select></div>
+            <div class="field"><label for="mDvds">Disclosure on site</label><select id="mDvds" data-t="dvds"><option value="20">20 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">1 hour</option></select></div>
+          </div>
+          <div class="row">
             <div class="field"><label for="sAdmin">Write-up time at end</label><select id="sAdmin"><option value="0">None</option><option value="30" selected>30 minutes</option><option value="45">45 minutes</option><option value="60">1 hour</option></select></div>
             <div class="field"><label for="sReach">Furthest visit from base</label><select id="sReach"><option value="20">20 min drive</option><option value="30">30 min drive</option><option value="40" selected>40 min drive</option><option value="60">1 hour drive</option></select></div>
           </div>
@@ -295,6 +300,7 @@ canvas#map.drag{cursor:grabbing}
       <li>Travel times. Dijkstra's shortest-path search runs from every station and every visit over the road graph. Speeds are set by road class: motorway 100 km/h, trunk 80, A road 56, B road 48, minor 42, unclassified 35, residential 28. There is a 4-second penalty at each urban junction.</li>
       <li>Crews. Officers are always paired into crews of two. A supervisor's own pairings come first. Otherwise each MOSOVO or Domestic Abuse Unit officer is paired with a BCU officer from the same station, then specialists with each other, then BCU officers together. Anyone without a partner gets no visits and is flagged.</li>
       <li>Eligibility. A crew can take an offender visit only if one member is MOSOVO, and that officer is the named lead. Specialist-only visits need both members to be MOSOVO. Clare's Law disclosures need a Domestic Abuse Unit member. Any crew can take a bail check, led by its BCU officer. A visit must be within the chosen drive time of the crew's base.</li>
+      <li>Time on site, from arrival, averages 1 hour for an offender visit, 10 minutes for a bail check and 30 minutes for a disclosure. A supervisor can change these on the day.</li>
       <li>Allocation. Visits are sorted by priority: overdue, then risk, then specialist-only, then time window. Each one goes to the officer and position that adds the least time while still fitting the shift, the write-up time and any time window.</li>
       <li>Improvement. Each route is improved with 2-opt and relocate moves, then any visits left over are tried again.</li>
       <li>Directions. Each leg's path is turned into plain-English steps from the road names and the angle of each turn.</li>
@@ -335,7 +341,8 @@ const OFFCOL = ["#0f62fe", "#da1e28", "#198038", "#8a3ffc", "#e86a00", "#007d79"
 const SPEED = [100, 80, 56, 48, 42, 35, 28, 15].map((k) => k / 3.6);
 const STATIONS = APP.stations, VISITS = APP.visits, NAMES = APP.names;
 const stById = {}; STATIONS.forEach((s, i) => { s.idx = i; stById[s.id] = s; s.X = PX(s.lon); s.Y = PY(s.lat); });
-VISITS.forEach((v, i) => { v.idx = i; v.X = PX(v.lon); v.Y = PY(v.lat); });
+const ONSITE = { rso: 60, bail: 10, dvds: 30 }; // average minutes on site, from arrival
+VISITS.forEach((v, i) => { v.idx = i; v.X = PX(v.lon); v.Y = PY(v.lat); v.mins = ONSITE[v.type]; });
 
 /* ---------------- graph decode ---------------- */
 let G = null;
@@ -828,7 +835,7 @@ function openPop(v) {
   if (v.window) tags.appendChild(el("span", { class: "tag ok" }, "Visit between " + fmt(v.window[0] * 60) + " and " + fmt(v.window[1] * 60)));
   if (tags.childNodes.length) p.appendChild(tags);
   const dl = el("dl"); const add = (k, val) => { dl.appendChild(el("dt", {}, k)); dl.appendChild(el("dd", {}, val)); };
-  add("Area", v.area + ", " + v.la); add("Owning team", v.team); add("Allow", v.mins + " minutes");
+  add("Area", v.area + ", " + v.la); add("Owning team", v.team); add("Time on site", dur(v.mins * 60) + " from arrival");
   if (v.lastVisit) add("Last visited", v.lastVisit); if (v.bailTo) add("Bailed to", v.bailTo); if (v.route) add("Route", v.route); if (v.applied) add("Applied", v.applied);
   if (a) { const r = S.plan.routes[a.oid]; const cr = r.o; const st = r.ev.arr[a.n - 1]; const [ld] = leadFor(cr, v); add("Allocated", "Crew " + cr.name + ", stop " + a.n + (st ? " at " + fmt(st.arrive) : "")); add("Lead", shortName(ld) + " (" + TEAMS[ld.team] + ")"); }
   else add("Allocated", S.types[v.type] ? "Not allocated" : "Type switched off");
@@ -994,6 +1001,7 @@ Object.keys(TYPES).forEach((t) => {
   b.onclick = () => { S.types[t] = !S.types[t]; b.setAttribute("aria-pressed", String(S.types[t])); replan(); }; $("typeChips").appendChild(b);
 });
 $("sAdmin").onchange = (e) => { S.admin = +e.target.value; replan(); };
+["mRso", "mBail", "mDvds"].forEach((id) => { $(id).onchange = (e) => { const t = e.target.dataset.t; ONSITE[t] = +e.target.value; VISITS.forEach((v) => { if (v.type === t) v.mins = ONSITE[t]; }); replan(); toast("Time on site updated. Routes rebuilt"); }; });
 $("sReach").onchange = (e) => { S.reach = +e.target.value; replan(); };
 $("addForm").addEventListener("submit", (e) => {
   e.preventDefault(); const name = $("fName").value.trim(); const msg = $("formMsg");

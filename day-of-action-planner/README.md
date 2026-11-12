@@ -33,8 +33,9 @@ A working mock-up of a tool that shares out Day of Action visits across officers
    - The times an applicant has said they can safely be seen are kept.
    - Each shift keeps a write-up period at the end.
 4. Optimises each route (cheapest insertion, then 2-opt and relocate moves).
-5. Produces a run sheet with arrival times, drive times and miles, and plain-English turn-by-turn directions for each leg, for example "Join M4 heading south-east, 3.6 miles".
-6. Lets a supervisor click any pin and give that visit to a named crew, which rebuilds the routes straight away.
+5. Allows average time on site from arrival: 1 hour for an offender visit, 10 minutes for a bail check and 30 minutes for a disclosure. These can be changed on the day.
+6. Produces a run sheet with arrival times, drive times and miles, and plain-English turn-by-turn directions for each leg, for example "Join M4 heading south-east, 3.6 miles".
+7. Lets a supervisor click any pin and give that visit to a named crew, which rebuilds the routes straight away.
 
 ## For a production build
 

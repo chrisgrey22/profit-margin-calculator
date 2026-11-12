@@ -80,18 +80,18 @@ for hub,(a,b,c) in COUNTS.items():
                lon=round(nodes[i][0],5),lat=round(nodes[i][1],5),initials=rnd.choice(FIRST)+"."+rnd.choice(FIRST)+".")
         if t=="rso":
             v["ref"]=f"VISOR-MOCK-{seq[t]:05d}";v["risk"]=rnd.choices(["Low","Medium","High","Very high"],[3,5,3,1])[0]
-            v["mins"]=45 if v["risk"] in("Low","Medium") else 60
+            v["mins"]=60
             v["overdue"]=rnd.random()<0.25;v["spec"]=v["risk"] in("High","Very high") and rnd.random()<0.7
             v["lastVisit"]=f"{rnd.randint(1,28):02d}/{rnd.choice(['06','07','08','09'])}/2026"
             v["flags"]=rnd.sample(FLAGS_RSO,2)
             v["team"]="Management of Sexual and Violent Offenders"
             if rnd.random()<0.2: v["window"]=[540,780]
         elif t=="bail":
-            v["ref"]=f"NICHE-MOCK-OCC-{seq[t]:06d}";v["mins"]=20;v["overdue"]=False;v["spec"]=False
+            v["ref"]=f"NICHE-MOCK-OCC-{seq[t]:06d}";v["mins"]=10;v["overdue"]=False;v["spec"]=False
             v["flags"]=rnd.sample(FLAGS_BAIL,2);v["team"]="Custody and case progression";v["risk"]=""
             v["bailTo"]=f"{rnd.randint(1,28):02d}/{rnd.choice(['12','01'])}/202{rnd.choice(['6','7'])}"
         else:
-            v["ref"]=f"DVDS-MOCK-{seq[t]:05d}";v["mins"]=45;v["overdue"]=rnd.random()<0.2;v["spec"]=False;v["risk"]=""
+            v["ref"]=f"DVDS-MOCK-{seq[t]:05d}";v["mins"]=30;v["overdue"]=rnd.random()<0.2;v["spec"]=False;v["risk"]=""
             f=rnd.sample(FLAGS_DVDS,2);v["flags"]=f;v["team"]="Domestic Abuse Unit"
             if any("10:00 to 14:00" in x for x in f): v["window"]=[600,840]
             v["route"]="Right to Know" if any("Right to Know" in x for x in f) else "Right to Ask"
