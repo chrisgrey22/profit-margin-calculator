@@ -16,18 +16,25 @@ A working mock-up of a tool that shares out Day of Action visits across officers
 
 ## What it does
 
-1. Takes a list of officers, each with a name, base station, team, start time and finish time. Examples are pre-filled and can be cleared.
+1. Takes a list of officers, each with a name, base station, team, start time and finish time, and pairs them into **crews of two**. Examples are pre-filled and can be cleared.
+   - No officer is ever sent out alone. Anyone without a partner is flagged and gets no visits.
+   - Pairing is automatic, and a supervisor can change it:
+     - First, each MOSOVO or Domestic Abuse Unit officer is paired with a BCU officer from the same station.
+     - Then specialists are paired with each other.
+     - Then BCU officers are paired together.
 2. Works out road travel times between every station and every visit, using Dijkstra's algorithm over 72,000 junctions and 85,000 road links (with one-way streets), in the browser.
 3. Shares the visits out:
-   - Only offender managers (Management of Sexual and Violent Offenders) lead registered sex offender visits.
-   - Only the Domestic Abuse Unit gives Clare's Law disclosures.
-   - Anyone can do a bail address check.
+   - Every visit is done by both members of a two-officer crew.
+   - A registered sex offender visit goes only to a crew that includes a MOSOVO officer, and that officer is the named lead.
+   - Specialist-only visits need both officers to be from MOSOVO.
+   - Clare's Law disclosures go only to a crew with a Domestic Abuse Unit officer, who leads.
+   - Bail address checks are picked up along a crew's route and led by the BCU officer.
    - Overdue and higher-risk visits are placed first.
    - The times an applicant has said they can safely be seen are kept.
    - Each shift keeps a write-up period at the end.
 4. Optimises each route (cheapest insertion, then 2-opt and relocate moves).
 5. Produces a run sheet with arrival times, drive times and miles, and plain-English turn-by-turn directions for each leg, for example "Join M4 heading south-east, 3.6 miles".
-6. Lets a supervisor click any pin and give that visit to a named officer, which rebuilds the routes straight away.
+6. Lets a supervisor click any pin and give that visit to a named crew, which rebuilds the routes straight away.
 
 ## For a production build
 
@@ -35,7 +42,7 @@ A working mock-up of a tool that shares out Day of Action visits across officers
 - **Base map:** use Ordnance Survey tiles under the Public Sector Geospatial Agreement.
 - **Data:** read-only feeds from Niche RMS (bail, Domestic Violence Disclosure Scheme applications) and ViSOR (offender visit schedules), geocoded to AddressBase UPRNs, with an audit log of every view.
 - **Security:** role-based access, so addresses are shown only to the allocated crew, and nothing is cached on the device.
-- **Rules to keep:** the offender manager is always the named lead on registered sex offender visits, and specialist-only visits stay with two officers from the owning team.
+- **Rules to keep:** every visit has two officers, with no lone visits. The MOSOVO officer is always the named lead on registered sex offender visits, and specialist-only visits stay with two officers from the owning team.
 
 The "Developer notes" button inside the app has the suggested data contract.
 

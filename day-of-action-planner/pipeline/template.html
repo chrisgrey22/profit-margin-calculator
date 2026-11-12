@@ -137,6 +137,13 @@ canvas#map.drag{cursor:grabbing}
 .dirs{margin:4px 0 2px;padding:10px 12px 10px 32px;background:var(--soft);border-radius:9px;font-size:14px;display:flex;flex-direction:column;gap:5px}
 .dirs li span{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 .empty{padding:24px 18px;color:var(--muted)}
+.solo{border:2px dashed #d97a7f;background:var(--badbg);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.solo .btn{align-self:flex-start}
+.solo .field,.sheethead .field{flex:none}
+.members{display:flex;flex-direction:column;gap:6px}
+.member{display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--soft);border-radius:9px;padding:8px 10px;font-size:14.5px}
+.member>span{min-width:0}
+.pair{font-size:14px;font-weight:600;color:var(--navy-2)}
 /* dev modal */
 .modal{position:fixed;inset:0;background:rgba(12,38,71,.5);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
 .modal>div{background:#fff;border-radius:14px;max-width:880px;width:100%;max-height:90%;overflow:auto;padding:22px 26px;display:flex;flex-direction:column;gap:12px}
@@ -199,7 +206,7 @@ canvas#map.drag{cursor:grabbing}
           <div class="kpis" id="kpis"></div>
         </section>
         <section class="sec" aria-labelledby="offH">
-          <div class="row" style="justify-content:space-between"><h2 id="offH">Officers on the day</h2><button class="btn small" id="clearOff" type="button">Clear examples</button></div>
+          <div class="row" style="justify-content:space-between"><h2 id="offH">Crews of two on the day</h2><button class="btn small" id="clearOff" type="button">Clear examples</button></div>
           <div class="offs" id="offs"></div>
           <form id="addForm" class="sec" style="padding:12px;border:1px dashed #b9c3d3;border-radius:10px;gap:10px" novalidate>
             <div class="row">
@@ -211,14 +218,15 @@ canvas#map.drag{cursor:grabbing}
                 <option value="MOSOVO">Sexual and Violent Offenders</option>
                 <option value="DAU">Domestic Abuse Unit</option>
                 <option value="POLIT">Online Investigation Team</option>
-                <option value="NPT">Neighbourhood or response</option></select></div>
+                <option value="NPT">BCU neighbourhood or response</option></select></div>
             </div>
             <div class="row">
               <div class="field"><label for="fStart">Start time</label><input id="fStart" type="time" value="09:15"></div>
               <div class="field"><label for="fEnd">Finish time</label><input id="fEnd" type="time" value="16:00"></div>
             </div>
             <p class="note" id="formMsg" role="alert" hidden></p>
-            <button class="btn hv" type="submit">Add officer and plan route</button>
+            <button class="btn hv" type="submit">Add officer</button>
+            <p class="note">New officers are paired automatically: a MOSOVO or Domestic Abuse Unit officer with a BCU officer from the same station. Change any pairing from the crew's run sheet.</p>
           </form>
         </section>
         <section class="sec" aria-labelledby="typH">
@@ -228,7 +236,7 @@ canvas#map.drag{cursor:grabbing}
             <div class="field"><label for="sAdmin">Write-up time at end</label><select id="sAdmin"><option value="0">None</option><option value="30" selected>30 minutes</option><option value="45">45 minutes</option><option value="60">1 hour</option></select></div>
             <div class="field"><label for="sReach">Furthest visit from base</label><select id="sReach"><option value="20">20 min drive</option><option value="30">30 min drive</option><option value="40" selected>40 min drive</option><option value="60">1 hour drive</option></select></div>
           </div>
-          <p class="note">Rules the planner follows. Only offender managers lead visits to registered sex offenders. Only the Domestic Abuse Unit gives Clare's Law disclosures. Any officer can do a bail address check. Overdue and higher-risk visits go first, and times the applicant can safely be seen are kept.</p>
+          <p class="note"><b>Rules the planner follows.</b> Every visit is done by two officers. Nobody is sent out alone. On every registered sex offender visit, one of the two is a MOSOVO officer and leads. Specialist-only visits need two MOSOVO officers. A Domestic Abuse Unit officer leads every Clare's Law disclosure. Bail checks are picked up along the crew's route, led by the BCU officer. Overdue and higher-risk visits go first, and times the applicant can safely be seen are kept.</p>
         </section>
         <section class="sec" aria-labelledby="unH">
           <h2 id="unH">Not allocated</h2>
@@ -281,14 +289,16 @@ canvas#map.drag{cursor:grabbing}
     <h3>How the planner works</h3>
     <ol>
       <li>Travel times. Dijkstra's shortest-path search runs from every station and every visit over the road graph. Speeds are set by road class: motorway 100 km/h, trunk 80, A road 56, B road 48, minor 42, unclassified 35, residential 28. There is a 4-second penalty at each urban junction.</li>
-      <li>Eligibility. Offender visits need a Management of Sexual and Violent Offenders lead. Clare's Law disclosures need a Domestic Abuse Unit lead. Bail checks can go to anyone. A visit must be within the chosen drive time of the officer's base.</li>
+      <li>Crews. Officers are always paired into crews of two. A supervisor's own pairings come first. Otherwise each MOSOVO or Domestic Abuse Unit officer is paired with a BCU officer from the same station, then specialists with each other, then BCU officers together. Anyone without a partner gets no visits and is flagged.</li>
+      <li>Eligibility. A crew can take an offender visit only if one member is MOSOVO, and that officer is the named lead. Specialist-only visits need both members to be MOSOVO. Clare's Law disclosures need a Domestic Abuse Unit member. Any crew can take a bail check, led by its BCU officer. A visit must be within the chosen drive time of the crew's base.</li>
       <li>Allocation. Visits are sorted by priority: overdue, then risk, then specialist-only, then time window. Each one goes to the officer and position that adds the least time while still fitting the shift, the write-up time and any time window.</li>
       <li>Improvement. Each route is improved with 2-opt and relocate moves, then any visits left over are tried again.</li>
       <li>Directions. Each leg's path is turned into plain-English steps from the road names and the angle of each turn.</li>
     </ol>
     <h3>Rules to keep in production</h3>
     <ul>
-      <li>The named lead on every registered sex offender visit is the offender manager. A buddy from another team never leads outside their own discipline.</li>
+      <li>Every visit is attended by two officers. No lone visits.</li>
+      <li>The named lead on every registered sex offender visit is the MOSOVO officer. A BCU partner never leads outside their own discipline.</li>
       <li>Specialist-only visits stay with two officers from the owning team.</li>
       <li>Disclosures respect the times the applicant has said they can safely be seen, and are never planned when the subject is likely to be present.</li>
       <li>Store as little as possible on devices. Show addresses only to the allocated crew, and log every view.</li>
@@ -296,7 +306,8 @@ canvas#map.drag{cursor:grabbing}
     <h3>Suggested data contract</h3>
     <p><code>Visit { id, type: rso|bail|dvds, ownerTeam, uprn, lat, lon, area, risk, overdue, specialistOnly, durationMins, window?: [start,end], flags[], sourceRef }</code></p>
     <p><code>Officer { id, name, collar, team, baseStationId, shiftStart, shiftEnd }</code></p>
-    <p><code>Plan { officerId, stops: [{ visitId, eta, depart, legSeconds, legMetres, steps[] }], finish, unallocated: [{ visitId, reason }] }</code></p>
+    <p><code>Crew { id, leadOfficerId, partnerOfficerId, baseStationId, start, end }</code> (always exactly two officers)</p>
+    <p><code>Plan { crewId, stops: [{ visitId, leadOfficerId, eta, depart, legSeconds, legMetres, steps[] }], finish, unallocated: [{ visitId, reason }] }</code></p>
   </div>
 </div>
 
@@ -314,7 +325,7 @@ const TYPES = {
   bail: { label: "Bail address check", short: "Bail check", color: "#d24a0e", lead: ["MOSOVO", "DAU", "POLIT", "NPT"] },
   dvds: { label: "Clare's Law disclosure", short: "Clare's Law disclosure", color: "#0b7c75", lead: ["DAU"] }
 };
-const TEAMS = { MOSOVO: "Sexual and Violent Offenders", DAU: "Domestic Abuse Unit", POLIT: "Online Investigation Team", NPT: "Neighbourhood or response" };
+const TEAMS = { MOSOVO: "Sexual and Violent Offenders", DAU: "Domestic Abuse Unit", POLIT: "Online Investigation Team", NPT: "BCU neighbourhood or response" };
 const HUBS = { W: "Western", N: "Central North", S: "Central South", E: "Eastern" };
 const OFFCOL = ["#0f62fe", "#da1e28", "#198038", "#8a3ffc", "#e86a00", "#007d79", "#d12771", "#1d3a8a", "#9a6b00", "#4b5563", "#0072c3", "#a2191f"];
 const SPEED = [100, 80, 56, 48, 42, 35, 28, 15].map((k) => k / 3.6);
@@ -402,35 +413,75 @@ function arcFrom(ar) { const e = G.aedge[ar]; return G.afwd[ar] ? G.eu[e] : G.ev
 
 /* ---------------- state ---------------- */
 const EX = "(example)";
+const D = (name, base, team) => ({ name: name + " " + EX, base, team, start: "09:15", end: "16:00" });
 const DEFAULT_OFFICERS = [
-  { name: "DC 4512 Rhian Hughes " + EX, base: "CKT", team: "MOSOVO", start: "09:15", end: "16:00" },
-  { name: "PC 3381 Owain Jenkins " + EX, base: "CKT", team: "DAU", start: "09:15", end: "16:00" },
-  { name: "DC 2907 Sian Price " + EX, base: "SWC", team: "MOSOVO", start: "09:15", end: "16:00" },
-  { name: "DC 5120 Gareth Lewis " + EX, base: "TRH", team: "MOSOVO", start: "09:15", end: "16:00" },
-  { name: "PC 6644 Ffion Rees " + EX, base: "TRH", team: "DAU", start: "09:15", end: "16:00" },
-  { name: "DC 1876 Mark Evans " + EX, base: "BGD", team: "MOSOVO", start: "09:15", end: "16:00" },
-  { name: "PC 7310 Cerys Thomas " + EX, base: "BGD", team: "POLIT", start: "09:15", end: "16:00" },
-  { name: "DC 3555 Dylan Morgan " + EX, base: "CFC", team: "MOSOVO", start: "09:15", end: "16:00" },
-  { name: "DC 4098 Nia Williams " + EX, base: "CFC", team: "MOSOVO", start: "09:15", end: "16:00" },
-  { name: "PC 2219 Tom Davies " + EX, base: "CFB", team: "DAU", start: "09:15", end: "16:00" },
-  { name: "PC 8802 Alys Powell " + EX, base: "CFB", team: "DAU", start: "09:15", end: "16:00" }
+  D("DC 4512 Rhian Hughes", "CKT", "MOSOVO"), D("PC 1043 Huw Bevan", "CKT", "NPT"),
+  D("PC 3381 Owain Jenkins", "CKT", "DAU"), D("PC 2276 Lowri Parry", "CKT", "NPT"),
+  D("DC 2907 Sian Price", "SWC", "MOSOVO"), D("PC 5518 Jac Phillips", "SWC", "NPT"),
+  D("DC 5120 Gareth Lewis", "TRH", "MOSOVO"), D("PC 6120 Bethan Rowlands", "TRH", "NPT"),
+  D("PC 6644 Ffion Rees", "TRH", "DAU"), D("PC 4471 Iwan Griffiths", "TRH", "NPT"),
+  D("DC 1876 Mark Evans", "BGD", "MOSOVO"), D("PC 7310 Cerys Thomas", "BGD", "POLIT"),
+  D("DC 3555 Dylan Morgan", "CFC", "MOSOVO"), D("DC 4098 Nia Williams", "CFC", "MOSOVO"),
+  D("PC 3902 Megan Hopkins", "CFC", "NPT"), D("PC 8125 Rhodri Watkins", "CFC", "NPT"),
+  D("DC 6210 Emyr Pritchard", "CFC", "MOSOVO"), D("PC 7781 Seren Bowen", "CFC", "NPT"),
+  D("PC 2219 Tom Davies", "CFB", "DAU"), D("PC 9034 Carys Lloyd", "CFB", "NPT")
 ];
+const DEFAULT_PAIRS = [["DC 3555 Dylan Morgan", "DC 4098 Nia Williams"]];
 let uid = 1;
 const S = {
-  officers: [], sel: null, types: { rso: true, bail: true, dvds: true }, admin: 30, reach: 40,
+  officers: [], pairs: {}, crews: [], solo: [], sel: null, types: { rso: true, bail: true, dvds: true }, admin: 30, reach: 40,
   pins: {}, plan: null, ready: false
 };
 function loadSaved() {
-  try { const raw = localStorage.getItem("doa-planner-v1"); if (raw) { const o = JSON.parse(raw); if (Array.isArray(o.officers) && o.officers.length) return o; } } catch (e) {}
+  try { const raw = localStorage.getItem("doa-planner-v2"); if (raw) { const o = JSON.parse(raw); if (Array.isArray(o.officers) && o.officers.length) return o; } } catch (e) {}
   return null;
 }
-function save() { try { localStorage.setItem("doa-planner-v1", JSON.stringify({ officers: S.officers.map(({ id, name, base, team, start, end }) => ({ id, name, base, team, start, end })) })); } catch (e) {} }
+function save() { try { localStorage.setItem("doa-planner-v2", JSON.stringify({ officers: S.officers.map(({ id, name, base, team, start, end }) => ({ id, name, base, team, start, end })), pairs: S.pairs })); } catch (e) {} }
 function initOfficers() {
   const sv = loadSaved();
-  const list = sv ? sv.officers : DEFAULT_OFFICERS;
-  S.officers = list.map((o) => Object.assign({}, o, { id: "o" + (uid++) }));
-  S.officers.forEach((o, i) => o.color = OFFCOL[i % OFFCOL.length]);
+  if (sv) {
+    S.officers = sv.officers.map((o) => Object.assign({}, o)); S.pairs = sv.pairs || {};
+    S.officers.forEach((o) => { const n = parseInt(String(o.id).slice(1), 10); if (n >= uid) uid = n + 1; });
+  } else {
+    S.officers = DEFAULT_OFFICERS.map((o) => Object.assign({}, o, { id: "o" + (uid++) }));
+    DEFAULT_PAIRS.forEach(([a, b]) => { const A = S.officers.find((o) => o.name.startsWith(a)), B = S.officers.find((o) => o.name.startsWith(b)); if (A && B) setPair(A.id, B.id); });
+  }
   S.sel = S.officers.length ? S.officers[0].id : null;
+}
+const offById = (id) => S.officers.find((o) => o.id === id);
+const shortName = (o) => o.name.replace(" " + EX, "").replace(/^(DC|PC|DS|PS|DI|Sgt|Insp|PCSO)\s+\d+\s+/i, "");
+function setPair(a, b) {
+  [a, b].forEach((x) => { if (!x) return; const old = S.pairs[x]; if (old) delete S.pairs[old]; delete S.pairs[x]; });
+  if (a && b && a !== b) { S.pairs[a] = b; S.pairs[b] = a; }
+}
+const RANK = { MOSOVO: 0, DAU: 1, POLIT: 2, NPT: 3 };
+const isSpec = (o) => o.team === "MOSOVO" || o.team === "DAU";
+// Every crew is exactly two officers. Supervisor pairings win; otherwise each specialist
+// (MOSOVO or Domestic Abuse Unit) is paired with a BCU officer from the same station first.
+function buildCrews() {
+  const used = new Set(); const crews = [];
+  const mk = (a, b, manual) => {
+    const [l, m] = RANK[a.team] <= RANK[b.team] ? [a, b] : [b, a]; used.add(a.id); used.add(b.id);
+    const s = Math.max(tmin(a.start), tmin(b.start)), e = Math.min(tmin(a.end), tmin(b.end));
+    crews.push({ id: "c-" + l.id + "-" + m.id, lead: l, mate: m, base: l.base, start: fmt(s * 60), end: fmt(e * 60), manual, name: shortName(l) + " + " + shortName(m) });
+  };
+  for (const a of S.officers) { const b = offById(S.pairs[a.id]); if (b && !used.has(a.id) && !used.has(b.id) && S.pairs[b.id] === a.id) mk(a, b, true); }
+  const free = () => S.officers.filter((o) => !used.has(o.id));
+  const passes = [(a, b) => isSpec(a) && !isSpec(b), (a, b) => isSpec(a) && isSpec(b), () => true];
+  for (const ok of passes) for (const a of free()) {
+    if (used.has(a.id)) continue;
+    const b = free().find((x) => x.id !== a.id && x.base === a.base && ok(a, x)); if (b) mk(a, b, false);
+  }
+  crews.forEach((c, i) => c.color = OFFCOL[i % OFFCOL.length]);
+  S.crews = crews; S.solo = free();
+}
+const crewOf = (oid) => S.crews.find((c) => c.lead.id === oid || c.mate.id === oid);
+const selCrewId = () => { const c = crewOf(S.sel); return c ? c.id : null; };
+const has = (c, t) => c.lead.team === t || c.mate.team === t;
+function leadFor(c, v) { // [lead, with]
+  if (v.type === "rso") return c.lead.team === "MOSOVO" ? [c.lead, c.mate] : [c.mate, c.lead];
+  if (v.type === "dvds") return c.lead.team === "DAU" ? [c.lead, c.mate] : [c.mate, c.lead];
+  return RANK[c.mate.team] >= 2 ? [c.mate, c.lead] : [c.lead, c.mate]; // bail: the BCU officer leads
 }
 const tmin = (s) => { const [h, m] = s.split(":").map(Number); return h * 60 + m; };
 const fmt = (sec) => { const m = Math.round(sec / 60); const h = Math.floor(m / 60) % 24, r = m % 60; return String(h).padStart(2, "0") + ":" + String(r).padStart(2, "0"); };
@@ -455,47 +506,46 @@ function evalRoute(o, stops) {
   const back = MT[prev * NP + b]; if (!isFinite(back)) return null; t += back; drive += back;
   return { finish: t, drive, arr, back, ok: t <= (tmin(o.end) - S.admin) * 60 };
 }
-function canDo(o, v) {
-  if (!TYPES[v.type].lead.includes(o.team)) return false;
-  if (MT[pIdxStation(stById[o.base]) * NP + pIdxVisit(v)] > S.reach * 60) return false;
+function eligible(c, v) {
+  if (v.type === "rso" && !has(c, "MOSOVO")) return false;
+  if (v.type === "rso" && v.spec && !(c.lead.team === "MOSOVO" && c.mate.team === "MOSOVO")) return false;
+  if (v.type === "dvds" && !has(c, "DAU")) return false;
   return true;
 }
+function canDo(c, v) { return eligible(c, v) && MT[pIdxStation(stById[c.base]) * NP + pIdxVisit(v)] <= S.reach * 60; }
 function plan() {
-  const offs = S.officers; const routes = {}; offs.forEach((o) => routes[o.id] = []);
+  buildCrews();
+  const offs = S.crews; const routes = {}; offs.forEach((o) => routes[o.id] = []);
   const want = VISITS.filter((v) => S.types[v.type]).sort((a, b) => prio(b) - prio(a));
   const un = [];
   const tryInsert = (v, only) => {
     let best = null;
     for (const o of offs) {
-      if (only && o.id !== only) continue;
-      if (!only && !canDo(o, v)) continue;
+      if (only ? (o.id !== only || !eligible(o, v)) : !canDo(o, v)) continue;
       const r = routes[o.id]; const cur = evalRoute(o, r); const base = cur ? cur.finish : 0;
       for (let k = 0; k <= r.length; k++) {
         const nr = r.slice(0, k).concat([v.idx], r.slice(k)); const ev = evalRoute(o, nr);
         if (!ev || (!ev.ok && !only)) continue;
-        const cost = ev.finish - base;
+        const cost = ev.finish - base + 420 * r.length; // spread work across crews
         if (!best || cost < best.cost) best = { o, nr, cost };
       }
     }
     if (best) { routes[best.o.id] = best.nr; return true; }
     return false;
   };
-  // pinned first
-  for (const v of want) { const pin = S.pins[v.id]; if (pin && offs.find((o) => o.id === pin)) tryInsert(v, pin); }
-  const pinnedSet = new Set(Object.keys(S.pins).filter((k) => offs.find((o) => o.id === S.pins[k])));
-  for (const v of want) { if (pinnedSet.has(v.id)) continue; if (!tryInsert(v)) un.push(v); }
-  // improve
+  const pinned = new Set();
+  for (const v of want) { const c = S.pins[v.id] && crewOf(S.pins[v.id]); if (c && tryInsert(v, c.id)) pinned.add(v.id); }
+  for (const v of want) { if (pinned.has(v.id)) continue; if (!tryInsert(v)) un.push(v); }
   for (const o of offs) routes[o.id] = improve(o, routes[o.id]);
   const still = [];
   for (const v of un) { if (!tryInsert(v)) still.push(v); }
   for (const o of offs) routes[o.id] = improve(o, routes[o.id]);
-  // reasons
   const unal = still.map((v) => {
-    const elig = offs.filter((o) => TYPES[v.type].lead.includes(o.team));
+    const elig = offs.filter((c) => eligible(c, v));
     let reason;
-    if (!elig.length) reason = "Nobody on duty can lead this visit (" + (v.type === "rso" ? "needs an offender manager" : "needs the Domestic Abuse Unit") + ")";
-    else if (!elig.some((o) => canDo(o, v))) reason = "No eligible officer within " + S.reach + " minutes' drive";
-    else reason = v.window ? "No room in a shift during the safe time window" : "No time left in an eligible officer's shift";
+    if (!elig.length) reason = v.type === "rso" ? (v.spec ? "Specialist-only: needs a crew of two MOSOVO officers" : "No crew has a MOSOVO officer") : v.type === "dvds" ? "No crew has a Domestic Abuse Unit officer" : "No crews of two on duty";
+    else if (!elig.some((c) => canDo(c, v))) reason = (v.spec ? "Specialist-only: no crew of two MOSOVO officers" : "No suitable crew") + " within " + S.reach + " minutes' drive";
+    else reason = v.window ? "No crew has room during the safe time window" : "No time left in a suitable crew's shift";
     return { v, reason };
   });
   const out = { routes: {}, unal, skipped: VISITS.filter((v) => !S.types[v.type]) };
@@ -663,13 +713,13 @@ function draw() {
   // routes
   hits = [];
   if (S.plan) {
-    const selR = S.plan.routes[S.sel];
-    for (const id in S.plan.routes) { if (id === S.sel) continue; drawRoute(S.plan.routes[id], false); }
+    const SC = selCrewId(); const selR = S.plan.routes[SC];
+    for (const id in S.plan.routes) { if (id === SC) continue; drawRoute(S.plan.routes[id], false); }
     if (selR) drawRoute(selR, true);
   }
   // pins
   const asg = assignMap();
-  const order = VISITS.slice().sort((a, b) => (asg[a.id] && asg[a.id].oid === S.sel) - (asg[b.id] && asg[b.id].oid === S.sel));
+  const SC2 = selCrewId(); const order = VISITS.slice().sort((a, b) => (asg[a.id] && asg[a.id].oid === SC2) - (asg[b.id] && asg[b.id].oid === SC2));
   for (const v of order) drawPin(v, asg[v.id]);
   for (const s of STATIONS) drawStation(s);
 }
@@ -693,7 +743,7 @@ function drawRoute(r, sel) {
 }
 function drawPin(v, a) {
   const c = ctx; const x = sx(v.X), y = sy(v.Y); if (x < -30 || y < -30 || x > V.w + 30 || y > V.h + 30) return;
-  const inactive = !S.types[v.type]; const mine = a && a.oid === S.sel; const other = a && !mine;
+  const inactive = !S.types[v.type]; const mine = a && a.oid === selCrewId(); const other = a && !mine;
   const r = mine ? 11 : 8.5; c.save(); c.globalAlpha = inactive ? .3 : other ? .7 : 1;
   c.fillStyle = TYPES[v.type].color; c.strokeStyle = "#fff"; c.lineWidth = 2.5;
   c.beginPath();
@@ -709,7 +759,7 @@ function drawPin(v, a) {
   c.restore(); hits.push({ x, y, r: r + 6, v });
 }
 function drawStation(s) {
-  const c = ctx; const x = sx(s.X), y = sy(s.Y); const sel = S.officers.some((o) => o.id === S.sel && o.base === s.id);
+  const c = ctx; const x = sx(s.X), y = sy(s.Y); const scr = crewOf(S.sel); const sel = !!scr && scr.base === s.id;
   const r = sel ? 13 : 10.5; c.save();
   c.fillStyle = "#0c2647"; c.strokeStyle = sel ? "#ffd23f" : "#fff"; c.lineWidth = 3;
   roundRect(x - r, y - r, r * 2, r * 2, 4); c.fill(); c.stroke();
@@ -753,7 +803,7 @@ function zoomAt(mx, my, f) { const X = (mx - V.w / 2) / V.s + V.cx, Y = (my - V.
 let raf = 0; function schedule() { if (!raf) raf = requestAnimationFrame(() => { raf = 0; draw(); placePop(); }); }
 function hitAt(e) { const r = cv.getBoundingClientRect(); const x = e.clientX - r.left, y = e.clientY - r.top; let best = null; for (const h of hits) { const d = Math.hypot(h.x - x, h.y - y); if (d <= h.r && (!best || d < best.d)) best = { d, h }; } return best && best.h; }
 function hover(e) { cv.style.cursor = hitAt(e) ? "pointer" : "grab"; }
-function click(e) { const h = hitAt(e); if (!h) { closePop(); return; } if (h.v) openPop(h.v); else if (h.s) { const o = S.officers.find((x) => x.base === h.s.id); if (o) selectOfficer(o.id, true); } }
+function click(e) { const h = hitAt(e); if (!h) { closePop(); return; } if (h.v) openPop(h.v); else if (h.s) { const c = S.crews.find((x) => x.base === h.s.id); if (c) selectOfficer(c.lead.id, true); } }
 $("zin").onclick = () => zoomAt(V.w / 2, V.h / 2, 1.6); $("zout").onclick = () => zoomAt(V.w / 2, V.h / 2, 1 / 1.6);
 $("zall").onclick = () => { fit(BOUNDS, 40); schedule(); };
 const AREAS = [["Whole force", null], ["Western", "W"], ["Central North", "N"], ["Central South", "S"], ["Eastern", "E"]];
@@ -776,17 +826,17 @@ function openPop(v) {
   const dl = el("dl"); const add = (k, val) => { dl.appendChild(el("dt", {}, k)); dl.appendChild(el("dd", {}, val)); };
   add("Area", v.area + ", " + v.la); add("Owning team", v.team); add("Allow", v.mins + " minutes");
   if (v.lastVisit) add("Last visited", v.lastVisit); if (v.bailTo) add("Bailed to", v.bailTo); if (v.route) add("Route", v.route); if (v.applied) add("Applied", v.applied);
-  if (a) { const o = S.officers.find((x) => x.id === a.oid); const r = S.plan.routes[a.oid]; const st = r.ev.arr[a.n - 1]; add("Allocated", o.name + ", stop " + a.n + (st ? " at " + fmt(st.arrive) : "")); }
+  if (a) { const r = S.plan.routes[a.oid]; const cr = r.o; const st = r.ev.arr[a.n - 1]; const [ld] = leadFor(cr, v); add("Allocated", "Crew " + cr.name + ", stop " + a.n + (st ? " at " + fmt(st.arrive) : "")); add("Lead", shortName(ld) + " (" + TEAMS[ld.team] + ")"); }
   else add("Allocated", S.types[v.type] ? "Not allocated" : "Type switched off");
   p.appendChild(dl);
   const ul = el("ul"); v.flags.forEach((f) => ul.appendChild(el("li", {}, f))); p.appendChild(ul);
-  const elig = S.officers.filter((o) => TYPES[v.type].lead.includes(o.team));
-  const fld = el("div", { class: "field" }); const lid = "mv" + v.id; fld.appendChild(el("label", { for: lid }, "Give this visit to"));
+  const elig = S.crews.filter((c) => eligible(c, v));
+  const fld = el("div", { class: "field" }); const lid = "mv" + v.id; fld.appendChild(el("label", { for: lid }, "Give this visit to a crew"));
   const sel = el("select", { id: lid }); sel.appendChild(el("option", { value: "" }, "Let the planner decide"));
-  elig.forEach((o) => sel.appendChild(el("option", { value: o.id }, o.name + " · " + stById[o.base].name)));
-  sel.value = S.pins[v.id] || ""; sel.onchange = () => { if (sel.value) S.pins[v.id] = sel.value; else delete S.pins[v.id]; replan(); openPop(v); toast(sel.value ? "Visit moved and routes rebuilt" : "Visit handed back to the planner"); };
+  elig.forEach((c) => sel.appendChild(el("option", { value: c.lead.id }, c.name + " · " + stById[c.base].name)));
+  { const pc = S.pins[v.id] && crewOf(S.pins[v.id]); sel.value = pc ? pc.lead.id : ""; } sel.onchange = () => { if (sel.value) S.pins[v.id] = sel.value; else delete S.pins[v.id]; replan(); openPop(v); toast(sel.value ? "Visit moved and routes rebuilt" : "Visit handed back to the planner"); };
   fld.appendChild(sel); p.appendChild(fld);
-  if (!elig.length) p.appendChild(el("p", { class: "note" }, "Nobody on duty can lead this visit."));
+  if (!elig.length) p.appendChild(el("p", { class: "note" }, v.type === "rso" ? (v.spec ? "No crew of two MOSOVO officers is on duty." : "No crew on duty includes a MOSOVO officer.") : "No crew on duty includes a Domestic Abuse Unit officer."));
   p.hidden = false; placePop();
 }
 function placePop() { if (!popV) return; const p = $("pop"); const x = sx(popV.X), y = sy(popV.Y); const w = p.offsetWidth, h = p.offsetHeight; let L2 = x + 18, T = y - h / 2; if (L2 + w > V.w - 8) L2 = x - w - 18; if (L2 < 8) L2 = 8; T = Math.max(8, Math.min(V.h - h - 8, T)); p.style.left = L2 + "px"; p.style.top = T + "px"; }
@@ -801,25 +851,47 @@ function renderKpis() {
   const alloc = S.plan ? Object.values(S.plan.routes).reduce((a, r) => a + r.stops.length, 0) : 0;
   const tot = VISITS.filter((v) => S.types[v.type]).length;
   const mi = S.plan ? Object.values(S.plan.routes).reduce((a, r) => a + (r.stops.length ? r.metres : 0), 0) / 1609.34 : 0;
-  [[cnt("rso"), "Offender visits"], [cnt("bail"), "Bail checks"], [cnt("dvds"), "Clare's Law"], [alloc + "/" + tot, "Allocated"], [S.officers.length, "Officers"], [Math.round(mi), "Miles planned"]].forEach(([a, b]) => { const d = el("div", { class: "kpi" }); d.appendChild(el("b", {}, String(a))); d.appendChild(el("span", {}, b)); k.appendChild(d); });
+  [[cnt("rso"), "Offender visits"], [cnt("bail"), "Bail checks"], [cnt("dvds"), "Clare's Law"], [alloc + "/" + tot, "Allocated"], [S.crews.length, "Crews of two"], [Math.round(mi), "Miles planned"]].forEach(([a, b]) => { const d = el("div", { class: "kpi" }); d.appendChild(el("b", {}, String(a))); d.appendChild(el("span", {}, b)); k.appendChild(d); });
+}
+function pairSelect(o, label, exclude) {
+  const f = el("div", { class: "field" }); const id = "pw" + o.id; f.appendChild(el("label", { for: id }, label));
+  const s = el("select", { id }); s.appendChild(el("option", { value: "" }, "Choose an officer"));
+  S.officers.filter((x) => x.id !== o.id && !(exclude || []).includes(x.id)).forEach((x) => {
+    const c = crewOf(x.id); s.appendChild(el("option", { value: x.id }, shortName(x) + " · " + TEAMS[x.team] + " · " + stById[x.base].name + (c ? " (now with " + shortName(c.lead.id === x.id ? c.mate : c.lead) + ")" : " (no partner)")));
+  });
+  s.onchange = () => { if (!s.value) return; const x = offById(s.value); setPair(o.id, s.value); S.sel = o.id; save(); replan(); toast(shortName(o) + " and " + shortName(x) + " are now a crew. Routes rebuilt"); };
+  f.appendChild(s); return f;
 }
 function renderOfficers() {
-  const box = $("offs"); box.textContent = "";
-  if (!S.officers.length) box.appendChild(el("p", { class: "note" }, "No officers yet. Add the first one below."));
-  S.officers.forEach((o) => {
-    const r = S.plan && S.plan.routes[o.id];
-    const b = el("button", { class: "off", type: "button", "aria-pressed": String(o.id === S.sel) });
-    const sw = el("span", { class: "swatch", "aria-hidden": "true" }); sw.style.background = o.color; b.appendChild(sw);
-    b.appendChild(el("span", { class: "nm" }, o.name));
-    const c = el("span", { class: "cnt" }, String(r ? r.stops.length : 0)); c.appendChild(el("span", {}, "visits")); b.appendChild(c);
-    b.appendChild(el("span", { class: "meta" }, stById[o.base].name + " · " + TEAMS[o.team] + " · " + o.start + " to " + o.end + (r && r.stops.length ? " · back " + fmt(r.ev.finish) : "")));
-    b.onclick = () => selectOfficer(o.id, true); box.appendChild(b);
+  const box = $("offs"); box.textContent = ""; const sc = selCrewId();
+  if (!S.officers.length) box.appendChild(el("p", { class: "note" }, "No officers yet. Add officers below and they will be paired into crews of two."));
+  S.crews.forEach((c) => {
+    const r = S.plan && S.plan.routes[c.id];
+    const b = el("button", { class: "off", type: "button", "aria-pressed": String(c.id === sc) });
+    const sw = el("span", { class: "swatch", "aria-hidden": "true" }); sw.style.background = c.color; b.appendChild(sw);
+    b.appendChild(el("span", { class: "nm" }, c.name));
+    const n = el("span", { class: "cnt" }, String(r ? r.stops.length : 0)); n.appendChild(el("span", {}, "visits")); b.appendChild(n);
+    b.appendChild(el("span", { class: "meta" }, stById[c.base].name + " · " + TEAMS[c.lead.team] + " with " + TEAMS[c.mate.team] + " · " + c.start + " to " + c.end + (r && r.stops.length ? " · back " + fmt(r.ev.finish) : "")));
+    b.onclick = () => selectOfficer(c.lead.id, true); box.appendChild(b);
   });
+  S.solo.forEach((o) => {
+    const d = el("div", { class: "solo" });
+    d.appendChild(el("b", {}, o.name));
+    d.appendChild(el("span", { class: "note" }, stById[o.base].name + " · " + TEAMS[o.team] + ". On their own, so they get no visits. Every visit needs two officers."));
+    d.appendChild(pairSelect(o, "Pair with"));
+    const rm = el("button", { class: "btn small", type: "button" }, "Remove"); rm.onclick = () => removeOfficer(o.id); d.appendChild(rm);
+    box.appendChild(d);
+  });
+}
+function removeOfficer(id) {
+  setPair(id, null); S.officers = S.officers.filter((x) => x.id !== id);
+  for (const k in S.pins) if (S.pins[k] === id) delete S.pins[k];
+  if (S.sel === id) S.sel = S.officers[0] ? S.officers[0].id : null; save(); replan();
 }
 function renderUnal() {
   const u = $("unal"); u.textContent = "";
   if (!S.plan) return;
-  if (!S.plan.unal.length) u.appendChild(el("p", { class: "note" }, "Every visit of the selected types has an officer."));
+  if (!S.plan.unal.length) u.appendChild(el("p", { class: "note" }, "Every visit of the selected types has a crew of two."));
   S.plan.unal.forEach(({ v, reason }) => {
     const b = el("button", { type: "button" }); b.appendChild(el("span", { class: "ic " + v.type, "aria-hidden": "true" }));
     const t = el("span"); t.appendChild(el("b", {}, TYPES[v.type].short + ", " + v.area)); t.appendChild(el("br")); t.appendChild(el("span", { class: "note" }, reason)); b.appendChild(t);
@@ -829,12 +901,27 @@ function renderUnal() {
 }
 function renderSheet() {
   const sh = $("sheet"); sh.textContent = "";
-  const o = S.officers.find((x) => x.id === S.sel);
-  if (!o || !S.plan) { sh.appendChild(el("div", { class: "empty" }, "Pick an officer to see their run sheet.")); return; }
+  const o = S.crews.find((x) => x.id === selCrewId());
+  if (!o || !S.plan) {
+    const solo = offById(S.sel);
+    sh.appendChild(el("div", { class: "empty" }, solo ? shortName(solo) + " has no partner yet, so they have no run sheet. Every visit needs two officers: pair them with someone on the left." : "Pick a crew to see its run sheet."));
+    return;
+  }
   const r = S.plan.routes[o.id]; const st = stById[o.base];
   const head = el("div", { class: "sheethead" });
   const h = el("h2"); const sw = el("span", { class: "swatch", "aria-hidden": "true" }); sw.style.cssText = "width:18px;height:18px;border-radius:5px;background:" + o.color; h.appendChild(sw); h.appendChild(document.createTextNode(o.name)); head.appendChild(h);
-  head.appendChild(el("div", { class: "sub" }, "Run sheet · " + TEAMS[o.team] + " · starts at " + st.name + " police station at " + o.start));
+  head.appendChild(el("div", { class: "sub" }, "Crew of two · run sheet · starts at " + st.name + " police station at " + o.start));
+  const mem = el("div", { class: "members" });
+  [o.lead, o.mate].forEach((m) => {
+    const row = el("div", { class: "member" });
+    const t = el("span"); t.appendChild(el("b", {}, m.name)); t.appendChild(el("br"));
+    const does = m.team === "MOSOVO" ? "Leads the offender visits" : m.team === "DAU" ? "Leads the Clare's Law disclosures" : "Leads the bail checks and supports every visit";
+    t.appendChild(el("span", { class: "note" }, TEAMS[m.team] + " · " + does)); row.appendChild(t);
+    const rm = el("button", { class: "btn small", type: "button", "aria-label": "Remove " + m.name }, "Remove"); rm.onclick = () => removeOfficer(m.id); row.appendChild(rm);
+    mem.appendChild(row);
+  });
+  head.appendChild(mem);
+  head.appendChild(pairSelect(o.lead, "Change " + shortName(o.lead) + "'s partner", [o.mate.id]));
   const sum = el("div", { class: "sum" });
   const late = r.stops.length && !r.ev.ok;
   [[r.stops.length, "Visits"], [miles(r.metres).replace(" miles", ""), "Miles"], [dur(r.ev.drive), "Driving"], [r.stops.length ? fmt(r.ev.finish) : o.start, "Back at base"]].forEach(([a, b]) => { const d = el("div"); d.appendChild(el("b", {}, String(a))); d.appendChild(el("span", {}, b)); sum.appendChild(d); });
@@ -843,22 +930,21 @@ function renderSheet() {
   const row = el("div", { class: "row" });
   const cp = el("button", { class: "btn small", type: "button" }, "Copy run sheet"); cp.onclick = () => copySheet(r); row.appendChild(cp);
   const fz = el("button", { class: "btn small", type: "button" }, "Show route on map"); fz.onclick = () => fitRoute(r); row.appendChild(fz);
-  const rm = el("button", { class: "btn small", type: "button" }, "Remove officer"); rm.onclick = () => { S.officers = S.officers.filter((x) => x.id !== o.id); for (const k in S.pins) if (S.pins[k] === o.id) delete S.pins[k]; S.sel = S.officers[0] ? S.officers[0].id : null; save(); replan(); }; row.appendChild(rm);
   head.appendChild(row); sh.appendChild(head);
-  if (!r.stops.length) { sh.appendChild(el("div", { class: "empty" }, "No visits fit this officer. Check their team, base and shift times, or move a visit to them from the map.")); return; }
+  if (!r.stops.length) { sh.appendChild(el("div", { class: "empty" }, "No visits fit this crew. Check the teams, base and shift times, or move a visit to them from the map.")); return; }
   const ol = el("ol", { class: "stops" });
   const mk = (numText, cls, color) => { const n = el("div", { class: "num" + (cls ? " " + cls : "") }, numText); if (color) n.style.background = color; return n; };
-  // start
   const li0 = el("li", { class: "stop" }); li0.appendChild(mk("P", "base")); const b0 = el("div", { class: "sbody" });
-  b0.appendChild(el("div", { class: "stime" }, o.start)); b0.appendChild(el("div", { class: "stitle" }, "Leave " + st.name + " police station")); b0.appendChild(el("div", { class: "sdet" }, "Collect kit, check radio and body-worn video"));
+  b0.appendChild(el("div", { class: "stime" }, o.start)); b0.appendChild(el("div", { class: "stitle" }, "Leave " + st.name + " police station together")); b0.appendChild(el("div", { class: "sdet" }, "Joint briefing, collect kit, check radios and body-worn video"));
   li0.appendChild(b0); ol.appendChild(li0);
   r.stops.forEach((vi, k) => {
-    const v = VISITS[vi]; const a = r.ev.arr[k]; const leg = r.legs[k];
+    const v = VISITS[vi]; const a = r.ev.arr[k]; const leg = r.legs[k]; const [ld, wt] = leadFor(o, v);
     const li = el("li", { class: "stop" }); li.appendChild(mk(String(k + 1), "", TYPES[v.type].color)); const b = el("div", { class: "sbody" });
     const tm = el("div", { class: "stime" }, fmt(a.arrive)); tm.appendChild(el("span", {}, " to " + fmt(a.arrive + v.mins * 60))); b.appendChild(tm);
     const tt = el("div", { class: "stitle" }, TYPES[v.type].short + ", " + v.area);
-    if (v.overdue) tt.appendChild(el("span", { class: "tag bad" }, "Overdue")); if (v.risk) tt.appendChild(el("span", { class: "tag " + (/high/i.test(v.risk) ? "bad" : "warn") }, v.risk)); if (v.spec) tt.appendChild(el("span", { class: "tag navy" }, "Two offender managers"));
+    if (v.overdue) tt.appendChild(el("span", { class: "tag bad" }, "Overdue")); if (v.risk) tt.appendChild(el("span", { class: "tag " + (/high/i.test(v.risk) ? "bad" : "warn") }, v.risk)); if (v.spec) tt.appendChild(el("span", { class: "tag navy" }, "Two MOSOVO officers"));
     b.appendChild(tt);
+    b.appendChild(el("div", { class: "pair" }, "Lead: " + shortName(ld) + " (" + TEAMS[ld.team] + ") · With: " + shortName(wt)));
     b.appendChild(el("div", { class: "sdet" }, v.ref + " · " + v.flags[0] + (a.wait > 59 ? " · wait " + dur(a.wait) + " for the safe time window" : "")));
     b.appendChild(legBlock(leg, k === 0 ? st.name + " police station" : "the visit address", "Arrive at stop " + (k + 1) + ": " + TYPES[v.type].short.toLowerCase() + " in " + v.area + ". The pin is a fictional location."));
     li.appendChild(b); ol.appendChild(li);
@@ -884,8 +970,8 @@ function legBlock(leg, fromName, toText) {
 }
 function copySheet(r) {
   const o = r.o, st = stById[o.base]; const L2 = [];
-  L2.push("DAY OF ACTION RUN SHEET (MOCK-UP, FICTIONAL DATA)", o.name + " · " + TEAMS[o.team], "Start " + o.start + " at " + st.name + " police station", "");
-  r.stops.forEach((vi, k) => { const v = VISITS[vi], a = r.ev.arr[k]; L2.push((k + 1) + ". " + fmt(a.arrive) + "  " + TYPES[v.type].short + ", " + v.area + "  (" + v.ref + ")");
+  L2.push("DAY OF ACTION RUN SHEET (MOCK-UP, FICTIONAL DATA)", "Crew of two: " + o.lead.name + " (" + TEAMS[o.lead.team] + ") and " + o.mate.name + " (" + TEAMS[o.mate.team] + ")", "Start " + o.start + " at " + st.name + " police station", "");
+  r.stops.forEach((vi, k) => { const v = VISITS[vi], a = r.ev.arr[k]; const [ld, wt] = leadFor(o, v); L2.push((k + 1) + ". " + fmt(a.arrive) + "  " + TYPES[v.type].short + ", " + v.area + "  (" + v.ref + ")  Lead: " + shortName(ld) + ", with " + shortName(wt));
     steps(r.legs[k].arcs, k === 0 ? st.name + " police station" : "the visit address", "Arrive at stop " + (k + 1)).forEach((s) => L2.push("     - " + s.t + (s.d ? " (" + s.d + ")" : ""))); });
   L2.push("", "Back at " + st.name + " " + fmt(r.ev.finish) + " · " + miles(r.metres) + " · driving " + dur(r.ev.drive));
   const txt = L2.join("\n");
@@ -893,7 +979,7 @@ function copySheet(r) {
   try { navigator.clipboard.writeText(txt).then(() => toast("Run sheet copied"), fallback); } catch (e) { fallback(); }
 }
 function fitRoute(r) { const pts = [stById[r.o.base]].concat(r.stops.map((vi) => VISITS[vi])); fitPts(pts, 80); }
-function selectOfficer(id, zoom) { S.sel = id; closePop(); renderOfficers(); renderSheet(); const r = S.plan && S.plan.routes[id]; if (zoom && r) fitRoute(r); else draw(); }
+function selectOfficer(id, zoom) { S.sel = id; closePop(); renderOfficers(); renderSheet(); const r = S.plan && S.plan.routes[selCrewId()]; if (zoom && r) fitRoute(r); else draw(); }
 let toastT = 0; function toast(t) { let d = document.querySelector(".toast"); if (!d) { d = el("div", { class: "toast", role: "status" }); document.body.appendChild(d); } d.textContent = t; clearTimeout(toastT); toastT = setTimeout(() => d.remove(), 2200); }
 function replan() { if (!S.ready) return; plan(); renderAll(); }
 
@@ -911,12 +997,15 @@ $("addForm").addEventListener("submit", (e) => {
   if (tmin($("fEnd").value || "16:00") <= tmin($("fStart").value || "09:15")) { msg.textContent = "The finish time needs to be after the start time."; msg.hidden = false; return; }
   msg.hidden = true;
   const o = { id: "o" + (uid++), name, base: $("fBase").value, team: $("fTeam").value, start: $("fStart").value || "09:15", end: $("fEnd").value || "16:00" };
-  o.color = OFFCOL[S.officers.length % OFFCOL.length]; S.officers.push(o); S.sel = o.id; $("fName").value = ""; save(); replan(); const r = S.plan.routes[o.id]; if (r) fitRoute(r);
-  toast(r && r.stops.length ? "Route built: " + r.stops.length + " visits for " + name : "Added " + name + ". No visits fit yet");
+  S.officers.push(o); S.sel = o.id; $("fName").value = ""; save(); replan();
+  const c = crewOf(o.id);
+  if (c) { const r = S.plan.routes[c.id]; fitRoute(r); toast("Paired with " + shortName(c.lead.id === o.id ? c.mate : c.lead) + ". Route built: " + r.stops.length + " visits"); }
+  else toast("Added " + shortName(o) + ". Nobody free at " + stById[o.base].name + " to pair with yet, so add a partner");
 });
 $("clearOff").onclick = () => {
-  const ex = S.officers.filter((o) => o.name.endsWith(EX)).length;
-  if (!ex) { toast("No example officers left"); return; }
+  const ex = S.officers.filter((o) => o.name.endsWith(EX));
+  if (!ex.length) { toast("No example officers left"); return; }
+  ex.forEach((o) => setPair(o.id, null));
   S.officers = S.officers.filter((o) => !o.name.endsWith(EX)); S.pins = {}; S.sel = S.officers[0] ? S.officers[0].id : null; save(); replan(); toast("Example officers removed. Add your own below"); $("fName").focus();
 };
 $("devBtn").onclick = () => { $("dev").hidden = false; $("devClose").focus(); };
@@ -945,11 +1034,11 @@ async function boot() {
     if (i % 4 === 3) { setLoad("Working out road travel times", (i + 1) / NP, (i + 1) + " of " + NP + " start points"); await new Promise((r) => setTimeout(r, 0)); }
   }
   S.ready = true; plan(); renderAll();
-  const r = S.plan.routes[S.sel]; if (r && r.stops.length) fitRoute(r);
+  const r = S.plan.routes[selCrewId()]; if (r && r.stops.length) fitRoute(r);
   $("loader").hidden = true;
 }
 window.addEventListener("resize", () => { resize(); placePop(); });
 if (window.ResizeObserver) new ResizeObserver(() => resize()).observe(wrap);
-window.__S=()=>S;window.__f=fmt;window.__m=miles;
+window.__S=()=>S;window.__f=fmt;window.__m=miles;window.__V=VISITS;
 boot();
 </script>
