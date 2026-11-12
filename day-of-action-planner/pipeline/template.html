@@ -1,0 +1,955 @@
+<title>__TITLE__</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: ops-room console. Navy command bar, planning rail left, live road map centre, paper-round run sheet right. */
+:root{
+  --navy:#0c2647; --navy-2:#16386a; --navy-3:#24508f;
+  --hivis:#ffd23f;
+  --ink:#14233a; --muted:#56637a; --line:#d5dce7; --panel:#ffffff; --bg:#e9eef5; --soft:#f3f6fa;
+  --rso:#5b2ca6; --bail:#d24a0e; --dvds:#0b7c75;
+  --ok:#17663a; --okbg:#dff1e6; --warn:#8a5a00; --warnbg:#fff2cc; --bad:#a3141c; --badbg:#fde3e3;
+  --f-ui:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:light;
+}
+html,body{height:100%}
+body{margin:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:16px;line-height:1.4;overflow:hidden}
+*{box-sizing:border-box}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--hivis);outline-offset:2px}
+.app{height:100%;display:grid;grid-template-rows:auto auto 1fr}
+/* header */
+.bar{background:var(--navy);color:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brand{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1 1 300px}
+.brand small{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:#b9c9e3}
+.brand h1{margin:0;font-size:24px;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+.brand .cy{font-weight:500;color:#b9c9e3;font-size:15px;margin-left:8px}
+.sync{display:flex;align-items:center;gap:10px;background:var(--navy-2);border:1px solid #33578d;border-radius:10px;padding:6px 8px 6px 12px;font-size:14px}
+.dot{width:10px;height:10px;border-radius:50%;background:#3ddc84;box-shadow:0 0 0 3px rgba(61,220,132,.25);flex:none}
+.sync.busy .dot{background:var(--hivis);box-shadow:0 0 0 3px rgba(255,210,63,.3);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.sync b{font-weight:600}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:9px;border:1px solid var(--line);background:#fff;font-weight:600;font-size:15px}
+.btn:hover{background:var(--soft)}
+.btn.dark{background:var(--navy-3);border-color:#4a72ad;color:#fff}
+.btn.dark:hover{background:#2c5ea5}
+.btn.primary{background:var(--navy);border-color:var(--navy);color:#fff}
+.btn.primary:hover{background:var(--navy-2)}
+.btn.hv{background:var(--hivis);border-color:#e6b800;color:#14233a}
+.btn.hv:hover{background:#ffdc66}
+.btn.small{min-height:36px;padding:0 12px;font-size:14px}
+.chequer{height:12px;background:
+  conic-gradient(var(--navy) 25%,#fff 0 50%,var(--navy) 0 75%,#fff 0) 0 0/24px 24px;}
+.mock{background:var(--warnbg);color:#4d3600;font-size:13.5px;padding-block:6px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-bottom:1px solid #ecd27a}
+.mock b{font-weight:700}
+.top{display:flex;flex-direction:column}
+/* main grid */
+.main{display:grid;grid-template-columns:minmax(330px,380px) 1fr minmax(360px,440px);min-height:0}
+.rail{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;min-width:0}
+.sheet{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0;min-width:0}
+.scroll{overflow:auto;min-height:0;flex:1}
+.sec{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
+.sec h2{margin:0;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1 1 120px}
+.field label{font-size:13px;font-weight:600;color:var(--muted)}
+.field input,.field select{min-height:44px;border:1px solid #b9c3d3;border-radius:8px;padding:0 10px;background:#fff;width:100%}
+.field input:focus,.field select:focus{border-color:var(--navy-3)}
+/* officers */
+.offs{display:flex;flex-direction:column;gap:8px}
+.off{display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;text-align:left;width:100%}
+.off[aria-pressed="true"]{border-color:var(--navy);box-shadow:inset 0 0 0 2px var(--navy);background:#f5f8fd}
+.swatch{width:16px;height:16px;border-radius:4px;grid-row:span 2}
+.off .nm{font-weight:700;font-size:16px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.off .meta{font-size:13.5px;color:var(--muted);grid-column:2}
+.off .cnt{grid-row:span 2;text-align:right;font-variant-numeric:tabular-nums;font-weight:700;font-size:20px;line-height:1.1}
+.off .cnt span{display:block;font-size:12px;font-weight:500;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:14px;font-weight:600}
+.chip[aria-pressed="false"]{opacity:.55;background:var(--soft)}
+.ic{display:inline-block;width:14px;height:14px;flex:none}
+.ic.rso{border-radius:50%;background:var(--rso)}
+.ic.bail{border-radius:2px;background:var(--bail)}
+.ic.dvds{background:var(--dvds);transform:rotate(45deg) scale(.86);border-radius:2px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpi{background:var(--soft);border-radius:9px;padding:8px 10px;display:flex;flex-direction:column}
+.kpi b{font-size:22px;font-variant-numeric:tabular-nums;line-height:1.15}
+.kpi span{font-size:12.5px;color:var(--muted)}
+.unal{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.unal button{all:unset;cursor:pointer;display:flex;gap:10px;align-items:center;padding:6px 4px;border-radius:6px}
+.unal button:hover{background:var(--soft)}
+.unal button:focus-visible{outline:3px solid var(--hivis)}
+.note{font-size:13.5px;color:var(--muted);margin:0}
+/* map */
+.mapwrap{position:relative;min-width:0;min-height:0;background:#bcd3e6;overflow:hidden;touch-action:none}
+canvas#map{position:absolute;inset:0;width:100%;height:100%;cursor:grab}
+canvas#map.drag{cursor:grabbing}
+.mapctl{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:6px}
+.mapctl button{width:46px;height:46px;border-radius:10px;border:1px solid #9fb0c8;background:#fff;font-size:22px;font-weight:700;box-shadow:0 1px 3px rgba(12,38,71,.18)}
+.mapctl button.txt{font-size:12px;font-weight:700}
+.areas{position:absolute;top:12px;left:12px;display:flex;flex-wrap:wrap;gap:6px;max-width:calc(100% - 90px)}
+.areas button{min-height:40px;padding:0 12px;border-radius:9px;border:1px solid #9fb0c8;background:rgba(255,255,255,.95);font-size:14px;font-weight:600;box-shadow:0 1px 3px rgba(12,38,71,.15)}
+.legend{position:absolute;left:12px;bottom:12px;background:rgba(255,255,255,.96);border:1px solid #b7c4d6;border-radius:10px;padding:10px 12px;font-size:13px;display:grid;grid-template-columns:auto 1fr;gap:5px 10px;align-items:center;box-shadow:0 1px 4px rgba(12,38,71,.15);max-width:min(330px,calc(100% - 24px))}
+.legend .stn{width:16px;height:16px;border-radius:4px;background:var(--navy);border:2px solid #fff;box-shadow:0 0 0 1px var(--navy)}
+.legend .rt{width:22px;height:5px;border-radius:3px;background:#0f62fe}
+.legend .bd{width:22px;height:0;border-top:2px dashed #3a5480}
+.legend .rd{display:flex;gap:2px}.legend .rd i{width:10px;height:5px;border-radius:2px;display:block}
+.credit{position:absolute;right:8px;bottom:6px;font-size:11px;color:#3b4b63;background:rgba(255,255,255,.8);padding:1px 6px;border-radius:4px}
+.loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(233,238,245,.86);z-index:5}
+.loader div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 22px;min-width:300px;max-width:90%;display:flex;flex-direction:column;gap:10px;box-shadow:0 6px 24px rgba(12,38,71,.15)}
+.prog{height:8px;background:var(--soft);border-radius:4px;overflow:hidden}.prog i{display:block;height:100%;width:0;background:var(--navy-3);transition:width .15s}
+.pop{position:absolute;z-index:4;width:330px;max-width:calc(100% - 24px);background:#fff;border:1px solid #9fb0c8;border-radius:12px;box-shadow:0 8px 28px rgba(12,38,71,.25);padding:14px 16px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.pop h3{margin:0;font-size:17px;display:flex;gap:8px;align-items:center}
+.pop .ref{font-family:var(--f-mono);font-size:12.5px;color:var(--muted)}
+.pop dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:3px 10px}
+.pop dt{color:var(--muted)}.pop dd{margin:0;font-weight:500}
+.pop ul{margin:0;padding-left:18px}
+.pop .x{position:absolute;top:6px;right:6px;width:36px;height:36px;border:0;background:none;font-size:22px;border-radius:8px}
+.pop .x:hover{background:var(--soft)}
+.tag{display:inline-block;border-radius:6px;padding:1px 8px;font-size:12.5px;font-weight:700}
+.tag.bad{background:var(--badbg);color:var(--bad)}.tag.warn{background:var(--warnbg);color:var(--warn)}.tag.ok{background:var(--okbg);color:var(--ok)}.tag.navy{background:#e3ebf7;color:var(--navy)}
+/* run sheet */
+.sheethead{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.sheethead h2{margin:0;font-size:22px;line-height:1.2;display:flex;align-items:center;gap:10px;text-wrap:balance}
+.sheethead .sub{color:var(--muted);font-size:14.5px}
+.sum{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.sum div{background:var(--soft);border-radius:8px;padding:6px 8px;display:flex;flex-direction:column}
+.sum b{font-size:19px;font-variant-numeric:tabular-nums}
+.sum span{font-size:12px;color:var(--muted)}
+.stops{list-style:none;margin:0;padding:8px 18px 24px;display:flex;flex-direction:column}
+.stop{display:grid;grid-template-columns:44px 1fr;gap:0 12px;position:relative}
+.stop:not(:last-child)::before{content:"";position:absolute;left:21px;top:44px;bottom:0;width:3px;background:var(--line)}
+.num{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px;z-index:1;border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
+.num.base{border-radius:10px;background:var(--navy)}
+.sbody{padding:6px 0 18px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.stime{font-variant-numeric:tabular-nums;font-weight:700;font-size:17px}
+.stime span{font-weight:500;color:var(--muted);font-size:14px}
+.stitle{font-weight:700;font-size:16px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.sdet{font-size:14px;color:var(--muted)}
+.drive{font-size:13.5px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dirbtn{all:unset;cursor:pointer;font-size:14px;font-weight:600;color:var(--navy-3);text-decoration:underline;text-underline-offset:3px;padding:6px 0}
+.dirbtn:focus-visible{outline:3px solid var(--hivis)}
+.dirs{margin:4px 0 2px;padding:10px 12px 10px 32px;background:var(--soft);border-radius:9px;font-size:14px;display:flex;flex-direction:column;gap:5px}
+.dirs li span{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.empty{padding:24px 18px;color:var(--muted)}
+/* dev modal */
+.modal{position:fixed;inset:0;background:rgba(12,38,71,.5);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+.modal>div{background:#fff;border-radius:14px;max-width:880px;width:100%;max-height:90%;overflow:auto;padding:22px 26px;display:flex;flex-direction:column;gap:12px}
+.modal h2{margin:0;font-size:24px}
+.modal h3{margin:8px 0 0;font-size:17px}
+.modal p,.modal li{max-width:75ch;font-size:15px}
+.modal code{font-family:var(--f-mono);font-size:13px;background:var(--soft);padding:1px 5px;border-radius:4px}
+.modal table{border-collapse:collapse;font-size:14px;width:100%}
+.modal td,.modal th{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:10px;font-weight:600;z-index:30}
+@media (max-width:1180px){
+  .main{grid-template-columns:340px 1fr}
+  .sheet{grid-column:1 / -1;border-left:0;border-top:1px solid var(--line);max-height:45vh}
+  .main{grid-template-rows:1fr auto}
+}
+@media (max-width:760px){
+  body{overflow:auto}
+  .app{height:auto}
+  .main{display:flex;flex-direction:column}
+  .rail{border-right:0;border-bottom:1px solid var(--line)}
+  .mapwrap{height:68vh;min-height:420px;order:-1}
+  .sheet{max-height:none}
+  .scroll{overflow:visible}
+  .legend{display:none}
+  .brand h1{font-size:20px}
+  .brand small{font-size:11px}
+  .bar{gap:8px 12px}
+  .sync{font-size:13px}
+  #devBtn{min-height:40px;font-size:14px}
+  .mock{font-size:12.5px}
+  .areas button{min-height:36px;font-size:13px}
+  .sum{grid-template-columns:repeat(2,1fr)}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="app">
+  <div class="top">
+    <header class="bar">
+      <div class="brand">
+        <small id="forceLine">__FORCELINE__</small>
+        <h1>Day of Action Visit Planner<span class="cy" lang="cy">Cynllunydd Ymweliadau</span></h1>
+      </div>
+      <div class="sync" id="sync" role="status">
+        <span class="dot" aria-hidden="true"></span>
+        <span id="syncText"><b>Niche RMS</b> · synced 07:42 · <span id="recCount">72</span> records (simulated)</span>
+        <button class="btn dark small" id="resync" type="button">Re-sync</button>
+      </div>
+      <button class="btn dark" id="devBtn" type="button">Developer notes</button>
+    </header>
+    <div class="chequer" aria-hidden="true"></div>
+    <div class="mock"><b>Mock-up.</b> Every person, visit and address is fictional and none of it comes from Niche. The roads, stations and boundaries are real (OpenStreetMap via Overture Maps). Visit pins sit on real streets but are not real addresses.</div>
+  </div>
+
+  <div class="main">
+    <aside class="rail" aria-label="Plan the day">
+      <div class="scroll">
+        <section class="sec">
+          <h2>Friday 20 November 2026</h2>
+          <div class="kpis" id="kpis"></div>
+        </section>
+        <section class="sec" aria-labelledby="offH">
+          <div class="row" style="justify-content:space-between"><h2 id="offH">Officers on the day</h2><button class="btn small" id="clearOff" type="button">Clear examples</button></div>
+          <div class="offs" id="offs"></div>
+          <form id="addForm" class="sec" style="padding:12px;border:1px dashed #b9c3d3;border-radius:10px;gap:10px" novalidate>
+            <div class="row">
+              <div class="field" style="flex-basis:100%"><label for="fName">Officer name and collar number</label><input id="fName" placeholder="e.g. DC 4512 Rhys Morgan" autocomplete="off"></div>
+            </div>
+            <div class="row">
+              <div class="field"><label for="fBase">Starts from</label><select id="fBase"></select></div>
+              <div class="field"><label for="fTeam">Team</label><select id="fTeam">
+                <option value="MOSOVO">Sexual and Violent Offenders</option>
+                <option value="DAU">Domestic Abuse Unit</option>
+                <option value="POLIT">Online Investigation Team</option>
+                <option value="NPT">Neighbourhood or response</option></select></div>
+            </div>
+            <div class="row">
+              <div class="field"><label for="fStart">Start time</label><input id="fStart" type="time" value="09:15"></div>
+              <div class="field"><label for="fEnd">Finish time</label><input id="fEnd" type="time" value="16:00"></div>
+            </div>
+            <p class="note" id="formMsg" role="alert" hidden></p>
+            <button class="btn hv" type="submit">Add officer and plan route</button>
+          </form>
+        </section>
+        <section class="sec" aria-labelledby="typH">
+          <h2 id="typH">Visit types to plan</h2>
+          <div class="chips" id="typeChips"></div>
+          <div class="row">
+            <div class="field"><label for="sAdmin">Write-up time at end</label><select id="sAdmin"><option value="0">None</option><option value="30" selected>30 minutes</option><option value="45">45 minutes</option><option value="60">1 hour</option></select></div>
+            <div class="field"><label for="sReach">Furthest visit from base</label><select id="sReach"><option value="20">20 min drive</option><option value="30">30 min drive</option><option value="40" selected>40 min drive</option><option value="60">1 hour drive</option></select></div>
+          </div>
+          <p class="note">Rules the planner follows. Only offender managers lead visits to registered sex offenders. Only the Domestic Abuse Unit gives Clare's Law disclosures. Any officer can do a bail address check. Overdue and higher-risk visits go first, and times the applicant can safely be seen are kept.</p>
+        </section>
+        <section class="sec" aria-labelledby="unH">
+          <h2 id="unH">Not allocated</h2>
+          <div class="unal" id="unal"></div>
+        </section>
+      </div>
+    </aside>
+
+    <div class="mapwrap" id="mapwrap">
+      <canvas id="map" aria-label="Map of South Wales showing police stations, visit locations and planned routes" role="img"></canvas>
+      <div class="areas" id="areas" aria-label="Zoom to area"></div>
+      <div class="mapctl">
+        <button type="button" id="zin" aria-label="Zoom in">+</button>
+        <button type="button" id="zout" aria-label="Zoom out">&minus;</button>
+        <button type="button" id="zall" class="txt" aria-label="Show whole force area">ALL</button>
+      </div>
+      <div class="legend" aria-label="Map key">
+        <span class="ic rso" aria-hidden="true"></span><span>Registered sex offender visit</span>
+        <span class="ic bail" aria-hidden="true"></span><span>Bail address check</span>
+        <span class="ic dvds" aria-hidden="true"></span><span>Clare's Law disclosure</span>
+        <span class="stn" aria-hidden="true"></span><span>Police station staff work from</span>
+        <span class="rt" id="lgRoute" aria-hidden="true"></span><span>Selected officer's route</span>
+        <span class="bd" aria-hidden="true"></span><span>Local authority boundary</span>
+        <span class="rd" aria-hidden="true"><i style="background:#5f86d6"></i><i style="background:#6fb27f"></i><i style="background:#e98f86"></i></span><span>Motorway, trunk road, A road</span>
+      </div>
+      <div class="credit">Map data © OpenStreetMap contributors, Overture Maps Foundation</div>
+      <div class="loader" id="loader"><div><b id="loadT">Loading the South Wales road network</b><div class="prog"><i id="loadP"></i></div><span class="note" id="loadS">Decoding 85,000 road links</span></div></div>
+      <div class="pop" id="pop" hidden></div>
+    </div>
+
+    <aside class="sheet" aria-label="Run sheet">
+      <div id="sheet" class="scroll"></div>
+    </aside>
+  </div>
+</div>
+
+<div class="modal" id="dev" hidden>
+  <div role="dialog" aria-modal="true" aria-labelledby="devH">
+    <div class="row" style="justify-content:space-between"><h2 id="devH">Developer notes</h2><button class="btn" id="devClose" type="button">Close</button></div>
+    <p>This page is a working mock-up of a visit planner for Day of Action deployments. Routing, allocation and directions run fully in the browser against a real road network. Only the case data is invented. Use this page as the brief for a production build.</p>
+    <h3>What is real and what is mocked</h3>
+    <table>
+      <tr><th>Part</th><th>In this mock-up</th><th>In production</th></tr>
+      <tr><td>Road network</td><td>OpenStreetMap roads via Overture Maps (release 2026-10-21), 72,000 junctions and 85,000 links, with one-way streets. Built into the page.</td><td>A routing engine (OSRM, GraphHopper or Valhalla) hosted inside the force network, or a commercial service approved by the force.</td></tr>
+      <tr><td>Base map</td><td>Coastline, rivers, woodland, local authority boundaries and place names, drawn on a canvas.</td><td>Ordnance Survey basemap tiles under the Public Sector Geospatial Agreement.</td></tr>
+      <tr><td>Police stations</td><td>Real stations from Overture Maps places. Cockett and Treharris are placed by hand and are approximate.</td><td>Force estates register.</td></tr>
+      <tr><td>Visits</td><td>72 invented records with mock references. Pins are snapped to real residential streets but are not real addresses.</td><td>Read-only feeds: Niche RMS (bail, Domestic Violence Disclosure Scheme applications) and ViSOR (registered offender visit schedules), geocoded with AddressBase UPRNs.</td></tr>
+      <tr><td>"Niche sync"</td><td>Animation only. Nothing is fetched.</td><td>Scheduled extract or API, with an audit log of who viewed which record.</td></tr>
+    </table>
+    <h3>How the planner works</h3>
+    <ol>
+      <li>Travel times. Dijkstra's shortest-path search runs from every station and every visit over the road graph. Speeds are set by road class: motorway 100 km/h, trunk 80, A road 56, B road 48, minor 42, unclassified 35, residential 28. There is a 4-second penalty at each urban junction.</li>
+      <li>Eligibility. Offender visits need a Management of Sexual and Violent Offenders lead. Clare's Law disclosures need a Domestic Abuse Unit lead. Bail checks can go to anyone. A visit must be within the chosen drive time of the officer's base.</li>
+      <li>Allocation. Visits are sorted by priority: overdue, then risk, then specialist-only, then time window. Each one goes to the officer and position that adds the least time while still fitting the shift, the write-up time and any time window.</li>
+      <li>Improvement. Each route is improved with 2-opt and relocate moves, then any visits left over are tried again.</li>
+      <li>Directions. Each leg's path is turned into plain-English steps from the road names and the angle of each turn.</li>
+    </ol>
+    <h3>Rules to keep in production</h3>
+    <ul>
+      <li>The named lead on every registered sex offender visit is the offender manager. A buddy from another team never leads outside their own discipline.</li>
+      <li>Specialist-only visits stay with two officers from the owning team.</li>
+      <li>Disclosures respect the times the applicant has said they can safely be seen, and are never planned when the subject is likely to be present.</li>
+      <li>Store as little as possible on devices. Show addresses only to the allocated crew, and log every view.</li>
+    </ul>
+    <h3>Suggested data contract</h3>
+    <p><code>Visit { id, type: rso|bail|dvds, ownerTeam, uprn, lat, lon, area, risk, overdue, specialistOnly, durationMins, window?: [start,end], flags[], sourceRef }</code></p>
+    <p><code>Officer { id, name, collar, team, baseStationId, shiftStart, shiftEnd }</code></p>
+    <p><code>Plan { officerId, stops: [{ visitId, eta, depart, legSeconds, legMetres, steps[] }], finish, unallocated: [{ visitId, reason }] }</code></p>
+  </div>
+</div>
+
+<script type="application/json" id="appdata">__APPDATA__</script>
+<script type="application/json" id="basedata">__BASEDATA__</script>
+<script>
+"use strict";
+const APP = JSON.parse(document.getElementById("appdata").textContent);
+const BASE = JSON.parse(document.getElementById("basedata").textContent);
+const $ = (id) => document.getElementById(id);
+const LON0 = -3.62, LAT0 = 51.6, KX = 111320 * Math.cos(LAT0 * Math.PI / 180), KY = 110574;
+const PX = (lon) => (lon - LON0) * KX, PY = (lat) => (LAT0 - lat) * KY;
+const TYPES = {
+  rso: { label: "Registered sex offender visit", short: "Offender visit", color: "#5b2ca6", lead: ["MOSOVO"] },
+  bail: { label: "Bail address check", short: "Bail check", color: "#d24a0e", lead: ["MOSOVO", "DAU", "POLIT", "NPT"] },
+  dvds: { label: "Clare's Law disclosure", short: "Clare's Law disclosure", color: "#0b7c75", lead: ["DAU"] }
+};
+const TEAMS = { MOSOVO: "Sexual and Violent Offenders", DAU: "Domestic Abuse Unit", POLIT: "Online Investigation Team", NPT: "Neighbourhood or response" };
+const HUBS = { W: "Western", N: "Central North", S: "Central South", E: "Eastern" };
+const OFFCOL = ["#0f62fe", "#da1e28", "#198038", "#8a3ffc", "#e86a00", "#007d79", "#d12771", "#1d3a8a", "#9a6b00", "#4b5563", "#0072c3", "#a2191f"];
+const SPEED = [100, 80, 56, 48, 42, 35, 28, 15].map((k) => k / 3.6);
+const STATIONS = APP.stations, VISITS = APP.visits, NAMES = APP.names;
+const stById = {}; STATIONS.forEach((s, i) => { s.idx = i; stById[s.id] = s; s.X = PX(s.lon); s.Y = PY(s.lat); });
+VISITS.forEach((v, i) => { v.idx = i; v.X = PX(v.lon); v.Y = PY(v.lat); });
+
+/* ---------------- graph decode ---------------- */
+let G = null;
+function decodeGraph() {
+  const bin = atob(APP.graph); const n = bin.length; const u8 = new Uint8Array(n);
+  for (let i = 0; i < n; i++) u8[i] = bin.charCodeAt(i);
+  let p = 0;
+  const uv = () => { let r = 0, m = 1, b; do { b = u8[p++]; r += (b & 127) * m; m *= 128; } while (b & 128); return r; };
+  const sv = () => { const k = uv(); return (k % 2) ? -(k + 1) / 2 : k / 2; };
+  const N = uv(); const qx = new Int32Array(N), qy = new Int32Array(N), nx = new Float32Array(N), ny = new Float32Array(N);
+  let x = 0, y = 0;
+  for (let i = 0; i < N; i++) { x += sv(); y += sv(); qx[i] = x; qy[i] = y; nx[i] = PX(x / 1e5); ny[i] = PY(y / 1e5); }
+  const E = uv();
+  const eu = new Int32Array(E), ev = new Int32Array(E), ecl = new Uint8Array(E), eow = new Uint8Array(E), enm = new Int32Array(E), erf = new Int32Array(E), eoff = new Int32Array(E + 1), elen = new Float32Array(E);
+  const bb = new Float32Array(E * 4);
+  let pts = new Float32Array(700000), pc = 0;
+  const push = (X, Y) => { if (pc + 2 > pts.length) { const t = new Float32Array(pts.length * 2); t.set(pts); pts = t; } pts[pc++] = X; pts[pc++] = Y; };
+  for (let e = 0; e < E; e++) {
+    const u = uv(); const v = u + sv(); const cb = u8[p++];
+    eu[e] = u; ev[e] = v; ecl[e] = cb & 15; eow[e] = cb >> 4; enm[e] = uv(); erf[e] = uv();
+    const k = uv(); eoff[e] = pc;
+    let ax = qx[u], ay = qy[u];
+    push(nx[u], ny[u]);
+    for (let j = 0; j < k; j++) { ax += sv(); ay += sv(); push(PX(ax / 1e5), PY(ay / 1e5)); }
+    push(nx[v], ny[v]);
+    let L = 0, mnx = 1e12, mny = 1e12, mxx = -1e12, mxy = -1e12;
+    for (let j = eoff[e]; j < pc; j += 2) {
+      const X = pts[j], Y = pts[j + 1];
+      if (X < mnx) mnx = X; if (X > mxx) mxx = X; if (Y < mny) mny = Y; if (Y > mxy) mxy = Y;
+      if (j > eoff[e]) L += Math.hypot(X - pts[j - 2], Y - pts[j - 1]);
+    }
+    elen[e] = L; bb[e * 4] = mnx; bb[e * 4 + 1] = mny; bb[e * 4 + 2] = mxx; bb[e * 4 + 3] = mxy;
+  }
+  eoff[E] = pc;
+  // CSR arcs
+  const deg = new Int32Array(N + 1);
+  for (let e = 0; e < E; e++) { if (eow[e] !== 2) deg[eu[e]]++; if (eow[e] !== 1) deg[ev[e]]++; }
+  const head = new Int32Array(N + 1); for (let i = 0; i < N; i++) head[i + 1] = head[i] + deg[i];
+  const A = head[N]; const ato = new Int32Array(A), aedge = new Int32Array(A), afwd = new Uint8Array(A), acost = new Float32Array(A);
+  const fill = head.slice(0, N);
+  for (let e = 0; e < E; e++) {
+    const c = elen[e] / SPEED[ecl[e]] + (ecl[e] >= 4 ? 4 : 1);
+    if (eow[e] !== 2) { const k = fill[eu[e]]++; ato[k] = ev[e]; aedge[k] = e; afwd[k] = 1; acost[k] = c; }
+    if (eow[e] !== 1) { const k = fill[ev[e]]++; ato[k] = eu[e]; aedge[k] = e; afwd[k] = 0; acost[k] = c; }
+  }
+  G = { N, E, nx, ny, eu, ev, ecl, eow, enm, erf, eoff, elen, bb, pts: pts.subarray(0, pc), head, ato, aedge, afwd, acost };
+}
+
+/* ---------------- shortest paths ---------------- */
+function dijkstra(src) {
+  const { N, head, ato, acost } = G;
+  const dist = new Float32Array(N).fill(Infinity); const pred = new Int32Array(N).fill(-1);
+  const hk = new Float32Array(N * 2 + 16), hv = new Int32Array(N * 2 + 16); let hs = 0;
+  const push = (k, v) => { let i = hs++; while (i > 0) { const pa = (i - 1) >> 1; if (hk[pa] <= k) break; hk[i] = hk[pa]; hv[i] = hv[pa]; i = pa; } hk[i] = k; hv[i] = v; };
+  const pop = () => { const v = hv[0]; const k = hk[--hs], w = hv[hs]; let i = 0; for (;;) { let c = 2 * i + 1; if (c >= hs) break; if (c + 1 < hs && hk[c + 1] < hk[c]) c++; if (hk[c] >= k) break; hk[i] = hk[c]; hv[i] = hv[c]; i = c; } hk[i] = k; hv[i] = w; return v; };
+  dist[src] = 0; push(0, src);
+  while (hs > 0) {
+    const d0 = hk[0]; const u = pop();
+    if (d0 > dist[u]) continue;
+    for (let a = head[u]; a < head[u + 1]; a++) {
+      const v = ato[a], nd = d0 + acost[a];
+      if (nd < dist[v]) { dist[v] = nd; pred[v] = a; if (hs >= hk.length - 1) continue; push(nd, v); }
+    }
+  }
+  return { dist, pred };
+}
+// points: stations then visits
+const PTS = STATIONS.map((s) => s.node).concat(VISITS.map((v) => v.node));
+const NP = PTS.length; const NS = STATIONS.length;
+const MT = new Float32Array(NP * NP);
+const PRED = new Array(NP);
+const pIdxStation = (s) => s.idx, pIdxVisit = (v) => NS + v.idx;
+function legPath(a, b) { // arcs from point a to point b
+  const pred = PRED[a]; const arcs = []; let n = PTS[b]; const src = PTS[a]; let guard = 0;
+  while (n !== src && guard++ < 200000) { const ar = pred[n]; if (ar < 0) return null; arcs.push(ar); n = arcFrom(ar); }
+  return arcs.reverse();
+}
+function arcFrom(ar) { const e = G.aedge[ar]; return G.afwd[ar] ? G.eu[e] : G.ev[e]; }
+
+/* ---------------- state ---------------- */
+const EX = "(example)";
+const DEFAULT_OFFICERS = [
+  { name: "DC 4512 Rhian Hughes " + EX, base: "CKT", team: "MOSOVO", start: "09:15", end: "16:00" },
+  { name: "PC 3381 Owain Jenkins " + EX, base: "CKT", team: "DAU", start: "09:15", end: "16:00" },
+  { name: "DC 2907 Sian Price " + EX, base: "SWC", team: "MOSOVO", start: "09:15", end: "16:00" },
+  { name: "DC 5120 Gareth Lewis " + EX, base: "TRH", team: "MOSOVO", start: "09:15", end: "16:00" },
+  { name: "PC 6644 Ffion Rees " + EX, base: "TRH", team: "DAU", start: "09:15", end: "16:00" },
+  { name: "DC 1876 Mark Evans " + EX, base: "BGD", team: "MOSOVO", start: "09:15", end: "16:00" },
+  { name: "PC 7310 Cerys Thomas " + EX, base: "BGD", team: "POLIT", start: "09:15", end: "16:00" },
+  { name: "DC 3555 Dylan Morgan " + EX, base: "CFC", team: "MOSOVO", start: "09:15", end: "16:00" },
+  { name: "DC 4098 Nia Williams " + EX, base: "CFC", team: "MOSOVO", start: "09:15", end: "16:00" },
+  { name: "PC 2219 Tom Davies " + EX, base: "CFB", team: "DAU", start: "09:15", end: "16:00" },
+  { name: "PC 8802 Alys Powell " + EX, base: "CFB", team: "DAU", start: "09:15", end: "16:00" }
+];
+let uid = 1;
+const S = {
+  officers: [], sel: null, types: { rso: true, bail: true, dvds: true }, admin: 30, reach: 40,
+  pins: {}, plan: null, ready: false
+};
+function loadSaved() {
+  try { const raw = localStorage.getItem("doa-planner-v1"); if (raw) { const o = JSON.parse(raw); if (Array.isArray(o.officers) && o.officers.length) return o; } } catch (e) {}
+  return null;
+}
+function save() { try { localStorage.setItem("doa-planner-v1", JSON.stringify({ officers: S.officers.map(({ id, name, base, team, start, end }) => ({ id, name, base, team, start, end })) })); } catch (e) {} }
+function initOfficers() {
+  const sv = loadSaved();
+  const list = sv ? sv.officers : DEFAULT_OFFICERS;
+  S.officers = list.map((o) => Object.assign({}, o, { id: "o" + (uid++) }));
+  S.officers.forEach((o, i) => o.color = OFFCOL[i % OFFCOL.length]);
+  S.sel = S.officers.length ? S.officers[0].id : null;
+}
+const tmin = (s) => { const [h, m] = s.split(":").map(Number); return h * 60 + m; };
+const fmt = (sec) => { const m = Math.round(sec / 60); const h = Math.floor(m / 60) % 24, r = m % 60; return String(h).padStart(2, "0") + ":" + String(r).padStart(2, "0"); };
+const dur = (sec) => { const m = Math.max(1, Math.round(sec / 60)); return m < 60 ? m + " min" : Math.floor(m / 60) + "h " + String(m % 60).padStart(2, "0") + "m"; };
+const miles = (m) => { const mi = m / 1609.34; if (mi < 0.25) return Math.max(10, Math.round(m * 1.0936 / 10) * 10) + " yards"; return (mi < 10 ? mi.toFixed(1) : Math.round(mi)) + " miles"; };
+
+/* ---------------- planning ---------------- */
+function prio(v) {
+  let p = 0; if (v.overdue) p += 100;
+  p += { "Very high": 60, High: 40, Medium: 20, Low: 10, "": 0 }[v.risk || ""] || 0;
+  if (v.spec) p += 15; if (v.window) p += 25; if (v.type === "rso") p += 8; if (v.type === "dvds") p += 5;
+  return p;
+}
+function evalRoute(o, stops) {
+  const b = pIdxStation(stById[o.base]); let t = tmin(o.start) * 60; let prev = b; let drive = 0; const arr = [];
+  for (const vi of stops) {
+    const v = VISITS[vi]; const p = pIdxVisit(v); const leg = MT[prev * NP + p]; if (!isFinite(leg)) return null;
+    t += leg; drive += leg; let wait = 0;
+    if (v.window) { if (t < v.window[0] * 60) { wait = v.window[0] * 60 - t; t = v.window[0] * 60; } if (t > v.window[1] * 60) return null; }
+    arr.push({ vi, arrive: t, wait, leg }); t += v.mins * 60; prev = p;
+  }
+  const back = MT[prev * NP + b]; if (!isFinite(back)) return null; t += back; drive += back;
+  return { finish: t, drive, arr, back, ok: t <= (tmin(o.end) - S.admin) * 60 };
+}
+function canDo(o, v) {
+  if (!TYPES[v.type].lead.includes(o.team)) return false;
+  if (MT[pIdxStation(stById[o.base]) * NP + pIdxVisit(v)] > S.reach * 60) return false;
+  return true;
+}
+function plan() {
+  const offs = S.officers; const routes = {}; offs.forEach((o) => routes[o.id] = []);
+  const want = VISITS.filter((v) => S.types[v.type]).sort((a, b) => prio(b) - prio(a));
+  const un = [];
+  const tryInsert = (v, only) => {
+    let best = null;
+    for (const o of offs) {
+      if (only && o.id !== only) continue;
+      if (!only && !canDo(o, v)) continue;
+      const r = routes[o.id]; const cur = evalRoute(o, r); const base = cur ? cur.finish : 0;
+      for (let k = 0; k <= r.length; k++) {
+        const nr = r.slice(0, k).concat([v.idx], r.slice(k)); const ev = evalRoute(o, nr);
+        if (!ev || (!ev.ok && !only)) continue;
+        const cost = ev.finish - base;
+        if (!best || cost < best.cost) best = { o, nr, cost };
+      }
+    }
+    if (best) { routes[best.o.id] = best.nr; return true; }
+    return false;
+  };
+  // pinned first
+  for (const v of want) { const pin = S.pins[v.id]; if (pin && offs.find((o) => o.id === pin)) tryInsert(v, pin); }
+  const pinnedSet = new Set(Object.keys(S.pins).filter((k) => offs.find((o) => o.id === S.pins[k])));
+  for (const v of want) { if (pinnedSet.has(v.id)) continue; if (!tryInsert(v)) un.push(v); }
+  // improve
+  for (const o of offs) routes[o.id] = improve(o, routes[o.id]);
+  const still = [];
+  for (const v of un) { if (!tryInsert(v)) still.push(v); }
+  for (const o of offs) routes[o.id] = improve(o, routes[o.id]);
+  // reasons
+  const unal = still.map((v) => {
+    const elig = offs.filter((o) => TYPES[v.type].lead.includes(o.team));
+    let reason;
+    if (!elig.length) reason = "Nobody on duty can lead this visit (" + (v.type === "rso" ? "needs an offender manager" : "needs the Domestic Abuse Unit") + ")";
+    else if (!elig.some((o) => canDo(o, v))) reason = "No eligible officer within " + S.reach + " minutes' drive";
+    else reason = v.window ? "No room in a shift during the safe time window" : "No time left in an eligible officer's shift";
+    return { v, reason };
+  });
+  const out = { routes: {}, unal, skipped: VISITS.filter((v) => !S.types[v.type]) };
+  for (const o of offs) out.routes[o.id] = buildDetail(o, routes[o.id]);
+  S.plan = out;
+}
+function improve(o, r) {
+  if (r.length < 2) return r;
+  let best = r.slice(), bv = evalRoute(o, best); if (!bv) return r;
+  let better = true, guard = 0;
+  while (better && guard++ < 60) {
+    better = false;
+    for (let i = 0; i < best.length - 1 && !better; i++) for (let j = i + 1; j < best.length && !better; j++) {
+      const c = best.slice(0, i).concat(best.slice(i, j + 1).reverse(), best.slice(j + 1)); const ev = evalRoute(o, c);
+      if (ev && (ev.ok || !bv.ok) && ev.finish < bv.finish - 1) { best = c; bv = ev; better = true; }
+    }
+    for (let i = 0; i < best.length && !better; i++) for (let j = 0; j < best.length && !better; j++) {
+      if (i === j) continue; const c = best.slice(); const [x] = c.splice(i, 1); c.splice(j, 0, x); const ev = evalRoute(o, c);
+      if (ev && (ev.ok || !bv.ok) && ev.finish < bv.finish - 1) { best = c; bv = ev; better = true; }
+    }
+  }
+  return best;
+}
+function buildDetail(o, stops) {
+  const st = stById[o.base]; const ev = evalRoute(o, stops) || { finish: tmin(o.start) * 60, drive: 0, arr: [], back: 0, ok: true };
+  const legs = []; let prev = pIdxStation(st); let metres = 0;
+  const seq = stops.map((vi) => pIdxVisit(VISITS[vi])).concat([pIdxStation(st)]);
+  seq.forEach((p, k) => {
+    const arcs = legPath(prev, p) || [];
+    const geo = legGeometry(arcs); metres += geo.metres;
+    legs.push({ from: prev, to: p, arcs, geo, secs: MT[prev * NP + p] });
+    prev = p;
+  });
+  return { o, stops, ev, legs, metres };
+}
+function legGeometry(arcs) {
+  const xs = []; let metres = 0;
+  for (const ar of arcs) {
+    const e = G.aedge[ar], f = G.afwd[ar]; const a = G.eoff[e], b = G.eoff[e + 1]; metres += G.elen[e];
+    if (f) { for (let j = a; j < b; j += 2) xs.push(G.pts[j], G.pts[j + 1]); }
+    else { for (let j = b - 2; j >= a; j -= 2) xs.push(G.pts[j], G.pts[j + 1]); }
+  }
+  return { xs: new Float32Array(xs), metres };
+}
+
+/* ---------------- turn-by-turn ---------------- */
+const CLSNAME = ["the motorway", "the main road", "the main road", "the B road", "the road", "a minor road", "an unnamed street", "a lane"];
+function edgeLabel(e) {
+  const nm = NAMES[G.enm[e]] || "", rf = NAMES[G.erf[e]] || "";
+  if (rf && nm && !nm.includes(rf)) return rf + " " + nm;
+  return nm || rf || (G.ecl[e] === 0 ? "the motorway" : "");
+}
+function bearing(x1, y1, x2, y2) { return (Math.atan2(x2 - x1, -(y2 - y1)) * 180 / Math.PI + 360) % 360; }
+const COMPASS = ["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"];
+const compass = (b) => COMPASS[Math.round(b / 45) % 8];
+function steps(arcs, fromName, toText) {
+  const groups = [];
+  for (const ar of arcs) {
+    const e = G.aedge[ar], f = G.afwd[ar]; const a = G.eoff[e], b = G.eoff[e + 1];
+    const xs = []; if (f) for (let j = a; j < b; j += 2) xs.push(G.pts[j], G.pts[j + 1]); else for (let j = b - 2; j >= a; j -= 2) xs.push(G.pts[j], G.pts[j + 1]);
+    const lab = edgeLabel(e); const cls = G.ecl[e];
+    const sb = bearingAlong(xs, false), eb = bearingAlong(xs, true);
+    const g = groups[groups.length - 1];
+    if (g && g.label === lab) { g.len += G.elen[e]; g.eb = eb; g.cls = Math.min(g.cls, cls); }
+    else groups.push({ label: lab, cls, len: G.elen[e], sb, eb });
+  }
+  // tidy: motorway pieces become one stretch; short links and unnamed straight-on bits fold into a neighbour
+  const gs = [];
+  for (const g0 of groups) {
+    const g = Object.assign({}, g0); const pv = gs[gs.length - 1];
+    if (pv) {
+      const turn = Math.abs(((g.sb - pv.eb + 540) % 360) - 180);
+      const bothMw = pv.cls === 0 && g.cls === 0;
+      if (pv.label === g.label || bothMw || (!g.label && (g.len < 80 || turn < 25)) || g.len < 35) {
+        pv.len += g.len; pv.eb = g.eb; if (!pv.label || pv.label === "the motorway") pv.label = g.label || pv.label; continue;
+      }
+      if ((!pv.label || pv.len < 35) && gs.length > 1 && pv.cls !== 0) { gs.pop(); const pp = gs[gs.length - 1]; pp.len += pv.len; pp.eb = pv.eb; if (pp.label === g.label) { pp.len += g.len; pp.eb = g.eb; continue; } }
+    }
+    gs.push(g);
+  }
+  const out = [];
+  gs.forEach((g, i) => {
+    const name = g.label || CLSNAME[g.cls];
+    let t;
+    if (i === 0) t = "Leave " + fromName + " heading " + compass(g.sb) + " on " + name;
+    else {
+      const p = gs[i - 1]; let d = ((g.sb - p.eb + 540) % 360) - 180; const ad = Math.abs(d); const side = d > 0 ? "right" : "left";
+      if (g.cls === 0 && p.cls !== 0) t = "Join " + name + " heading " + compass(g.sb);
+      else if (p.cls === 0 && g.cls !== 0) t = "Leave the motorway onto " + name;
+      else if (ad < 25) t = "Continue onto " + name;
+      else if (ad < 60) t = "Bear " + side + " onto " + name;
+      else if (ad < 155) t = "Turn " + side + " onto " + name;
+      else t = "Turn around and take " + name;
+    }
+    out.push({ t, d: miles(g.len) });
+  });
+  out.push({ t: toText, d: "" });
+  return out;
+}
+function bearingAlong(xs, end) {
+  const n = xs.length / 2; if (n < 2) return 0;
+  if (!end) { let k = 1; while (k < n - 1 && Math.hypot(xs[2 * k] - xs[0], xs[2 * k + 1] - xs[1]) < 15) k++; return bearing(xs[0], xs[1], xs[2 * k], xs[2 * k + 1]); }
+  let k = n - 2; while (k > 0 && Math.hypot(xs[2 * (n - 1)] - xs[2 * k], xs[2 * (n - 1) + 1] - xs[2 * k + 1]) < 15) k--;
+  return bearing(xs[2 * k], xs[2 * k + 1], xs[2 * (n - 1)], xs[2 * (n - 1) + 1]);
+}
+
+/* ---------------- map ---------------- */
+const cv = $("map"), ctx = cv.getContext("2d"); const wrap = $("mapwrap");
+const V = { cx: 0, cy: 0, s: 0.01, w: 800, h: 600, dpr: 1 };
+const BOUNDS = (() => { let a = 1e12, b = 1e12, c = -1e12, d = -1e12; STATIONS.concat(VISITS).forEach((p) => { a = Math.min(a, p.X); c = Math.max(c, p.X); b = Math.min(b, p.Y); d = Math.max(d, p.Y); }); return [a, b, c, d]; })();
+function ringsToXY(rings) { return rings.map((r) => { const f = new Float32Array(r.length); for (let i = 0; i < r.length; i += 2) { f[i] = PX(r[i] / 1e5); f[i + 1] = PY(r[i + 1] / 1e5); } return f; }); }
+const L = { land: ringsToXY(BASE.land), water: ringsToXY(BASE.water), rivers: ringsToXY(BASE.rivers), woods: ringsToXY(BASE.woods), force: ringsToXY(BASE.force), la: BASE.la.map((a) => ({ name: a.name, lines: ringsToXY(a.lines), X: PX(a.cx / 1e5), Y: PY(a.cy / 1e5) })), places: BASE.places.map((p) => ({ n: p.n, t: p.t, pop: p.pop, X: PX(p.x / 1e5), Y: PY(p.y / 1e5) })) };
+function resize() {
+  const r = wrap.getBoundingClientRect(); V.w = Math.max(200, r.width); V.h = Math.max(200, r.height); V.dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = Math.round(V.w * V.dpr); cv.height = Math.round(V.h * V.dpr); draw();
+}
+function fit(b, pad) {
+  pad = pad || 60; const w = Math.max(400, b[2] - b[0]), h = Math.max(400, b[3] - b[1]);
+  V.s = Math.min((V.w - pad * 2) / w, (V.h - pad * 2) / h); V.s = Math.min(Math.max(V.s, 0.004), 1.2);
+  V.cx = (b[0] + b[2]) / 2; V.cy = (b[1] + b[3]) / 2;
+}
+const sx = (X) => (X - V.cx) * V.s + V.w / 2, sy = (Y) => (Y - V.cy) * V.s + V.h / 2;
+function polyPath(f, close) { ctx.moveTo(sx(f[0]), sy(f[1])); for (let i = 2; i < f.length; i += 2) ctx.lineTo(sx(f[i]), sy(f[i + 1])); if (close) ctx.closePath(); }
+const ROAD = [
+  { c: "#5f86d6", k: "#2f4f8f", w: [3, 7] }, { c: "#6fb27f", k: "#356b43", w: [2.4, 6] }, { c: "#e98f86", k: "#a4544c", w: [2, 5.5] },
+  { c: "#f4c879", k: "#b4893c", w: [1.4, 4.5] }, { c: "#ffffff", k: "#a7b0bd", w: [1, 3.8] }, { c: "#ffffff", k: "#b7bfca", w: [.8, 3.2] },
+  { c: "#ffffff", k: "#c1c8d2", w: [.7, 3] }, { c: "#ffffff", k: "#c9cfd8", w: [.6, 2.4] }
+];
+let hits = [];
+function draw() {
+  if (!G) return;
+  const c = ctx; c.setTransform(V.dpr, 0, 0, V.dpr, 0, 0);
+  c.fillStyle = "#bcd3e6"; c.fillRect(0, 0, V.w, V.h);
+  c.beginPath(); L.land.forEach((f) => polyPath(f, true)); c.fillStyle = "#f2f0eb"; c.fill("evenodd");
+  // force area tint
+  c.beginPath(); L.woods.forEach((f) => polyPath(f, true)); c.fillStyle = "#dce8d2"; c.fill("evenodd");
+  c.beginPath(); L.water.forEach((f) => polyPath(f, true)); c.fillStyle = "#bcd3e6"; c.fill("evenodd");
+  c.beginPath(); L.rivers.forEach((f) => polyPath(f, false)); c.strokeStyle = "#a9c6de"; c.lineWidth = V.s > 0.03 ? 2.5 : 1.2; c.stroke();
+  // LA boundaries
+  c.save(); c.setLineDash([6, 5]); c.strokeStyle = "rgba(58,84,128,.65)"; c.lineWidth = 1.4; c.beginPath(); L.la.forEach((a) => a.lines.forEach((f) => polyPath(f, false))); c.stroke();
+  c.setLineDash([]); c.strokeStyle = "rgba(12,38,71,.35)"; c.lineWidth = 5; c.beginPath(); L.force.forEach((f) => polyPath(f, false)); c.stroke(); c.restore();
+  // roads
+  const x0 = V.cx - V.w / 2 / V.s, x1 = V.cx + V.w / 2 / V.s, y0 = V.cy - V.h / 2 / V.s, y1 = V.cy + V.h / 2 / V.s;
+  const maxCls = V.s < 0.012 ? 2 : V.s < 0.02 ? 3 : V.s < 0.035 ? 4 : V.s < 0.06 ? 5 : 7;
+  const z = Math.min(1, Math.max(0, (Math.log(V.s) - Math.log(0.01)) / (Math.log(0.4) - Math.log(0.01))));
+  const vis = [[], [], [], [], [], [], [], []];
+  for (let e = 0; e < G.E; e++) {
+    const cl = G.ecl[e]; if (cl > maxCls) continue; const o = e * 4;
+    if (G.bb[o + 2] < x0 || G.bb[o] > x1 || G.bb[o + 3] < y0 || G.bb[o + 1] > y1) continue; vis[cl].push(e);
+  }
+  const casing = V.s > 0.05;
+  c.lineCap = "round"; c.lineJoin = "round";
+  for (let pass = 0; pass < 2; pass++) {
+    for (let cl = 7; cl >= 0; cl--) {
+      const st = ROAD[cl]; if (!vis[cl].length) continue; if (pass === 0 && !casing && cl > 2) continue;
+      const w = st.w[0] + (st.w[1] - st.w[0]) * z * (cl <= 2 ? 1.6 : 1.4);
+      c.beginPath();
+      for (const e of vis[cl]) { const a = G.eoff[e], b = G.eoff[e + 1]; c.moveTo(sx(G.pts[a]), sy(G.pts[a + 1])); for (let j = a + 2; j < b; j += 2) c.lineTo(sx(G.pts[j]), sy(G.pts[j + 1])); }
+      if (pass === 0) { c.strokeStyle = st.k; c.lineWidth = w + 2; } else { c.strokeStyle = (cl >= 4 && !casing) ? "#c4cbd5" : st.c; c.lineWidth = (cl >= 4 && !casing) ? Math.max(.6, w * .6) : w; }
+      c.stroke();
+    }
+  }
+  // labels
+  drawPlaces();
+  // routes
+  hits = [];
+  if (S.plan) {
+    const selR = S.plan.routes[S.sel];
+    for (const id in S.plan.routes) { if (id === S.sel) continue; drawRoute(S.plan.routes[id], false); }
+    if (selR) drawRoute(selR, true);
+  }
+  // pins
+  const asg = assignMap();
+  const order = VISITS.slice().sort((a, b) => (asg[a.id] && asg[a.id].oid === S.sel) - (asg[b.id] && asg[b.id].oid === S.sel));
+  for (const v of order) drawPin(v, asg[v.id]);
+  for (const s of STATIONS) drawStation(s);
+}
+function assignMap() {
+  const m = {}; if (!S.plan) return m;
+  for (const id in S.plan.routes) S.plan.routes[id].stops.forEach((vi, k) => m[VISITS[vi].id] = { oid: id, n: k + 1, color: S.plan.routes[id].o.color });
+  return m;
+}
+function drawRoute(r, sel) {
+  const c = ctx; if (!r.legs.length || !r.stops.length) return;
+  c.save(); c.lineCap = "round"; c.lineJoin = "round";
+  const path = () => { c.beginPath(); r.legs.forEach((l) => { const f = l.geo.xs; if (f.length < 4) return; polyPath(f, false); }); };
+  if (sel) {
+    path(); c.strokeStyle = "#ffffff"; c.lineWidth = 11; c.stroke();
+    path(); c.strokeStyle = r.o.color; c.lineWidth = 6.5; c.stroke();
+    // chevrons
+    c.fillStyle = "#fff";
+    r.legs.forEach((l) => { const f = l.geo.xs; let acc = 0; for (let i = 2; i < f.length; i += 2) { const ax = sx(f[i - 2]), ay = sy(f[i - 1]), bx = sx(f[i]), by = sy(f[i + 1]); const d = Math.hypot(bx - ax, by - ay); acc += d; if (acc > 70 && d > 4) { acc = 0; const ang = Math.atan2(by - ay, bx - ax); const mx = (ax + bx) / 2, my = (ay + by) / 2; c.save(); c.translate(mx, my); c.rotate(ang); c.beginPath(); c.moveTo(3.5, 0); c.lineTo(-2.5, -3); c.lineTo(-2.5, 3); c.closePath(); c.fill(); c.restore(); } } });
+  } else { path(); c.strokeStyle = r.o.color; c.globalAlpha = .38; c.lineWidth = 3.5; c.stroke(); }
+  c.restore();
+}
+function drawPin(v, a) {
+  const c = ctx; const x = sx(v.X), y = sy(v.Y); if (x < -30 || y < -30 || x > V.w + 30 || y > V.h + 30) return;
+  const inactive = !S.types[v.type]; const mine = a && a.oid === S.sel; const other = a && !mine;
+  const r = mine ? 11 : 8.5; c.save(); c.globalAlpha = inactive ? .3 : other ? .7 : 1;
+  c.fillStyle = TYPES[v.type].color; c.strokeStyle = "#fff"; c.lineWidth = 2.5;
+  c.beginPath();
+  if (v.type === "rso") c.arc(x, y, r, 0, Math.PI * 2);
+  else if (v.type === "bail") c.rect(x - r * .9, y - r * .9, r * 1.8, r * 1.8);
+  else { c.moveTo(x, y - r * 1.15); c.lineTo(x + r * 1.15, y); c.lineTo(x, y + r * 1.15); c.lineTo(x - r * 1.15, y); c.closePath(); }
+  c.fill(); c.stroke();
+  if (v.overdue && !inactive) { c.beginPath(); c.arc(x, y, r + 5, 0, Math.PI * 2); c.strokeStyle = "#a3141c"; c.lineWidth = 2; c.setLineDash([3, 3]); c.stroke(); c.setLineDash([]); }
+  if (mine) {
+    c.fillStyle = a.color; c.beginPath(); c.arc(x + 12, y - 12, 10, 0, Math.PI * 2); c.fill(); c.strokeStyle = "#fff"; c.lineWidth = 2; c.stroke();
+    c.fillStyle = "#fff"; c.font = "700 12px " + getComputedStyle(document.body).fontFamily; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(String(a.n), x + 12, y - 11.5);
+  } else if (!a && !inactive) { c.fillStyle = "#fff"; c.beginPath(); c.arc(x, y, 2.6, 0, Math.PI * 2); c.fill(); }
+  c.restore(); hits.push({ x, y, r: r + 6, v });
+}
+function drawStation(s) {
+  const c = ctx; const x = sx(s.X), y = sy(s.Y); const sel = S.officers.some((o) => o.id === S.sel && o.base === s.id);
+  const r = sel ? 13 : 10.5; c.save();
+  c.fillStyle = "#0c2647"; c.strokeStyle = sel ? "#ffd23f" : "#fff"; c.lineWidth = 3;
+  roundRect(x - r, y - r, r * 2, r * 2, 4); c.fill(); c.stroke();
+  // chequer band
+  c.fillStyle = "#fff"; for (let i = 0; i < 4; i++) c.fillRect(x - r + 2 + i * ((r * 2 - 4) / 4), y + r * .25 + (i % 2) * 3, (r * 2 - 4) / 8, 3);
+  c.fillStyle = "#fff"; c.font = "700 " + (sel ? 12 : 10) + "px " + getComputedStyle(document.body).fontFamily; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("P", x, y - 2.5);
+  const lab = s.name + (s.approx ? " (approx.)" : "");
+  c.font = "600 13px " + getComputedStyle(document.body).fontFamily; c.textAlign = "left";
+  c.lineWidth = 4; c.strokeStyle = "rgba(255,255,255,.95)"; c.strokeText(lab, x + r + 5, y); c.fillStyle = "#0c2647"; c.fillText(lab, x + r + 5, y);
+  c.restore(); hits.push({ x, y, r: r + 4, s });
+}
+function roundRect(x, y, w, h, r) { const c = ctx; c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+function drawPlaces() {
+  const c = ctx; const ff = getComputedStyle(document.body).fontFamily; const used = [];
+  const minPop = V.s < 0.012 ? 25000 : V.s < 0.025 ? 9000 : V.s < 0.05 ? 3000 : 0;
+  c.save(); c.textAlign = "center"; c.textBaseline = "middle";
+  for (const p of L.places) {
+    if (p.t === "locality" && p.pop < minPop) continue; if (p.t !== "locality" && V.s < 0.05) continue;
+    const x = sx(p.X), y = sy(p.Y); if (x < -50 || x > V.w + 50 || y < -20 || y > V.h + 20) continue;
+    const big = p.pop > 100000; const size = big ? 17 : p.pop > 20000 ? 14.5 : p.t === "locality" ? 13 : 12;
+    c.font = (big ? "700 " : p.t === "locality" ? "600 " : "500 italic ") + size + "px " + ff;
+    const w = c.measureText(p.n).width; const box = [x - w / 2 - 4, y - size / 2 - 3, x + w / 2 + 4, y + size / 2 + 3];
+    if (used.some((b) => !(box[2] < b[0] || box[0] > b[2] || box[3] < b[1] || box[1] > b[3]))) continue; used.push(box);
+    c.lineWidth = 3.5; c.strokeStyle = "rgba(242,240,235,.95)"; c.strokeText(p.n, x, y); c.fillStyle = p.t === "locality" ? "#3a3f4a" : "#5d6573"; c.fillText(p.n, x, y);
+  }
+  if (V.s < 0.03) { c.font = "700 12px " + ff; c.fillStyle = "rgba(36,80,143,.75)"; for (const a of L.la) { const x = sx(a.X), y = sy(a.Y) + 18; c.fillText(a.name.toUpperCase(), x, y); } }
+  c.restore();
+}
+/* interaction */
+let drag = null; const ptrs = new Map(); let pinch = null; let moved = false;
+cv.addEventListener("pointerdown", (e) => { cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); moved = false; if (ptrs.size === 1) drag = { x: e.clientX, y: e.clientY, cx: V.cx, cy: V.cy }; else if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), s: V.s }; drag = null; } });
+cv.addEventListener("pointermove", (e) => {
+  if (!ptrs.has(e.pointerId)) { hover(e); return; } ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pinch && ptrs.size === 2) { const [a, b] = [...ptrs.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y); const r = cv.getBoundingClientRect(); zoomAt((a.x + b.x) / 2 - r.left, (a.y + b.y) / 2 - r.top, pinch.s * d / pinch.d / V.s); moved = true; return; }
+  if (drag) { const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (Math.abs(dx) + Math.abs(dy) > 4) { moved = true; cv.classList.add("drag"); } V.cx = drag.cx - dx / V.s; V.cy = drag.cy - dy / V.s; schedule(); }
+});
+const endPtr = (e) => { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = null; if (!ptrs.size) { cv.classList.remove("drag"); if (!moved) click(e); drag = null; } };
+cv.addEventListener("pointerup", endPtr); cv.addEventListener("pointercancel", endPtr);
+cv.addEventListener("wheel", (e) => { e.preventDefault(); const r = cv.getBoundingClientRect(); zoomAt(e.clientX - r.left, e.clientY - r.top, Math.exp(-e.deltaY * 0.0016)); }, { passive: false });
+function zoomAt(mx, my, f) { const X = (mx - V.w / 2) / V.s + V.cx, Y = (my - V.h / 2) / V.s + V.cy; V.s = Math.min(1.5, Math.max(0.004, V.s * f)); V.cx = X - (mx - V.w / 2) / V.s; V.cy = Y - (my - V.h / 2) / V.s; schedule(); }
+let raf = 0; function schedule() { if (!raf) raf = requestAnimationFrame(() => { raf = 0; draw(); placePop(); }); }
+function hitAt(e) { const r = cv.getBoundingClientRect(); const x = e.clientX - r.left, y = e.clientY - r.top; let best = null; for (const h of hits) { const d = Math.hypot(h.x - x, h.y - y); if (d <= h.r && (!best || d < best.d)) best = { d, h }; } return best && best.h; }
+function hover(e) { cv.style.cursor = hitAt(e) ? "pointer" : "grab"; }
+function click(e) { const h = hitAt(e); if (!h) { closePop(); return; } if (h.v) openPop(h.v); else if (h.s) { const o = S.officers.find((x) => x.base === h.s.id); if (o) selectOfficer(o.id, true); } }
+$("zin").onclick = () => zoomAt(V.w / 2, V.h / 2, 1.6); $("zout").onclick = () => zoomAt(V.w / 2, V.h / 2, 1 / 1.6);
+$("zall").onclick = () => { fit(BOUNDS, 40); schedule(); };
+const AREAS = [["Whole force", null], ["Western", "W"], ["Central North", "N"], ["Central South", "S"], ["Eastern", "E"]];
+AREAS.forEach(([lab, h]) => { const b = document.createElement("button"); b.type = "button"; b.textContent = lab; b.onclick = () => { const pts = h ? VISITS.filter((v) => v.hub === h).concat(STATIONS.filter((s) => s.hub === h)) : STATIONS.concat(VISITS); fitPts(pts); }; $("areas").appendChild(b); });
+function fitPts(pts, pad) { let a = 1e12, b = 1e12, c = -1e12, d = -1e12; pts.forEach((p) => { a = Math.min(a, p.X); c = Math.max(c, p.X); b = Math.min(b, p.Y); d = Math.max(d, p.Y); }); fit([a, b, c, d], pad || 70); schedule(); }
+
+/* popup */
+let popV = null;
+function openPop(v) {
+  popV = v; const a = assignMap()[v.id]; const p = $("pop"); p.textContent = "";
+  const x = el("button", { class: "x", type: "button", "aria-label": "Close" }, "×"); x.onclick = closePop; p.appendChild(x);
+  const h = el("h3", {}, ""); h.appendChild(el("span", { class: "ic " + v.type, "aria-hidden": "true" })); h.appendChild(document.createTextNode(TYPES[v.type].label)); p.appendChild(h);
+  p.appendChild(el("div", { class: "ref" }, v.ref + " · subject " + v.initials + " (fictional)"));
+  const tags = el("div", { class: "row" });
+  if (v.overdue) tags.appendChild(el("span", { class: "tag bad" }, "Overdue"));
+  if (v.risk) tags.appendChild(el("span", { class: "tag " + (/high/i.test(v.risk) ? "bad" : "warn") }, "Risk: " + v.risk));
+  if (v.spec) tags.appendChild(el("span", { class: "tag navy" }, "Specialist-only: two offender managers"));
+  if (v.window) tags.appendChild(el("span", { class: "tag ok" }, "Visit between " + fmt(v.window[0] * 60) + " and " + fmt(v.window[1] * 60)));
+  if (tags.childNodes.length) p.appendChild(tags);
+  const dl = el("dl"); const add = (k, val) => { dl.appendChild(el("dt", {}, k)); dl.appendChild(el("dd", {}, val)); };
+  add("Area", v.area + ", " + v.la); add("Owning team", v.team); add("Allow", v.mins + " minutes");
+  if (v.lastVisit) add("Last visited", v.lastVisit); if (v.bailTo) add("Bailed to", v.bailTo); if (v.route) add("Route", v.route); if (v.applied) add("Applied", v.applied);
+  if (a) { const o = S.officers.find((x) => x.id === a.oid); const r = S.plan.routes[a.oid]; const st = r.ev.arr[a.n - 1]; add("Allocated", o.name + ", stop " + a.n + (st ? " at " + fmt(st.arrive) : "")); }
+  else add("Allocated", S.types[v.type] ? "Not allocated" : "Type switched off");
+  p.appendChild(dl);
+  const ul = el("ul"); v.flags.forEach((f) => ul.appendChild(el("li", {}, f))); p.appendChild(ul);
+  const elig = S.officers.filter((o) => TYPES[v.type].lead.includes(o.team));
+  const fld = el("div", { class: "field" }); const lid = "mv" + v.id; fld.appendChild(el("label", { for: lid }, "Give this visit to"));
+  const sel = el("select", { id: lid }); sel.appendChild(el("option", { value: "" }, "Let the planner decide"));
+  elig.forEach((o) => sel.appendChild(el("option", { value: o.id }, o.name + " · " + stById[o.base].name)));
+  sel.value = S.pins[v.id] || ""; sel.onchange = () => { if (sel.value) S.pins[v.id] = sel.value; else delete S.pins[v.id]; replan(); openPop(v); toast(sel.value ? "Visit moved and routes rebuilt" : "Visit handed back to the planner"); };
+  fld.appendChild(sel); p.appendChild(fld);
+  if (!elig.length) p.appendChild(el("p", { class: "note" }, "Nobody on duty can lead this visit."));
+  p.hidden = false; placePop();
+}
+function placePop() { if (!popV) return; const p = $("pop"); const x = sx(popV.X), y = sy(popV.Y); const w = p.offsetWidth, h = p.offsetHeight; let L2 = x + 18, T = y - h / 2; if (L2 + w > V.w - 8) L2 = x - w - 18; if (L2 < 8) L2 = 8; T = Math.max(8, Math.min(V.h - h - 8, T)); p.style.left = L2 + "px"; p.style.top = T + "px"; }
+function closePop() { popV = null; $("pop").hidden = true; }
+function el(tag, attrs, text) { const n = document.createElement(tag); for (const k in (attrs || {})) n.setAttribute(k, attrs[k]); if (text != null) n.textContent = text; return n; }
+
+/* ---------------- panels ---------------- */
+function renderAll() { renderKpis(); renderOfficers(); renderUnal(); renderSheet(); draw(); }
+function renderKpis() {
+  const k = $("kpis"); k.textContent = "";
+  const cnt = (t) => VISITS.filter((v) => v.type === t).length;
+  const alloc = S.plan ? Object.values(S.plan.routes).reduce((a, r) => a + r.stops.length, 0) : 0;
+  const tot = VISITS.filter((v) => S.types[v.type]).length;
+  const mi = S.plan ? Object.values(S.plan.routes).reduce((a, r) => a + (r.stops.length ? r.metres : 0), 0) / 1609.34 : 0;
+  [[cnt("rso"), "Offender visits"], [cnt("bail"), "Bail checks"], [cnt("dvds"), "Clare's Law"], [alloc + "/" + tot, "Allocated"], [S.officers.length, "Officers"], [Math.round(mi), "Miles planned"]].forEach(([a, b]) => { const d = el("div", { class: "kpi" }); d.appendChild(el("b", {}, String(a))); d.appendChild(el("span", {}, b)); k.appendChild(d); });
+}
+function renderOfficers() {
+  const box = $("offs"); box.textContent = "";
+  if (!S.officers.length) box.appendChild(el("p", { class: "note" }, "No officers yet. Add the first one below."));
+  S.officers.forEach((o) => {
+    const r = S.plan && S.plan.routes[o.id];
+    const b = el("button", { class: "off", type: "button", "aria-pressed": String(o.id === S.sel) });
+    const sw = el("span", { class: "swatch", "aria-hidden": "true" }); sw.style.background = o.color; b.appendChild(sw);
+    b.appendChild(el("span", { class: "nm" }, o.name));
+    const c = el("span", { class: "cnt" }, String(r ? r.stops.length : 0)); c.appendChild(el("span", {}, "visits")); b.appendChild(c);
+    b.appendChild(el("span", { class: "meta" }, stById[o.base].name + " · " + TEAMS[o.team] + " · " + o.start + " to " + o.end + (r && r.stops.length ? " · back " + fmt(r.ev.finish) : "")));
+    b.onclick = () => selectOfficer(o.id, true); box.appendChild(b);
+  });
+}
+function renderUnal() {
+  const u = $("unal"); u.textContent = "";
+  if (!S.plan) return;
+  if (!S.plan.unal.length) u.appendChild(el("p", { class: "note" }, "Every visit of the selected types has an officer."));
+  S.plan.unal.forEach(({ v, reason }) => {
+    const b = el("button", { type: "button" }); b.appendChild(el("span", { class: "ic " + v.type, "aria-hidden": "true" }));
+    const t = el("span"); t.appendChild(el("b", {}, TYPES[v.type].short + ", " + v.area)); t.appendChild(el("br")); t.appendChild(el("span", { class: "note" }, reason)); b.appendChild(t);
+    b.onclick = () => { V.cx = v.X; V.cy = v.Y; V.s = Math.max(V.s, 0.06); schedule(); openPop(v); }; u.appendChild(b);
+  });
+  if (S.plan.skipped.length) u.appendChild(el("p", { class: "note" }, S.plan.skipped.length + " visits are hidden because their type is switched off."));
+}
+function renderSheet() {
+  const sh = $("sheet"); sh.textContent = "";
+  const o = S.officers.find((x) => x.id === S.sel);
+  if (!o || !S.plan) { sh.appendChild(el("div", { class: "empty" }, "Pick an officer to see their run sheet.")); return; }
+  const r = S.plan.routes[o.id]; const st = stById[o.base];
+  const head = el("div", { class: "sheethead" });
+  const h = el("h2"); const sw = el("span", { class: "swatch", "aria-hidden": "true" }); sw.style.cssText = "width:18px;height:18px;border-radius:5px;background:" + o.color; h.appendChild(sw); h.appendChild(document.createTextNode(o.name)); head.appendChild(h);
+  head.appendChild(el("div", { class: "sub" }, "Run sheet · " + TEAMS[o.team] + " · starts at " + st.name + " police station at " + o.start));
+  const sum = el("div", { class: "sum" });
+  const late = r.stops.length && !r.ev.ok;
+  [[r.stops.length, "Visits"], [miles(r.metres).replace(" miles", ""), "Miles"], [dur(r.ev.drive), "Driving"], [r.stops.length ? fmt(r.ev.finish) : o.start, "Back at base"]].forEach(([a, b]) => { const d = el("div"); d.appendChild(el("b", {}, String(a))); d.appendChild(el("span", {}, b)); sum.appendChild(d); });
+  head.appendChild(sum);
+  if (late) head.appendChild(el("span", { class: "tag bad" }, "Runs past the finish time, because of visits you moved here by hand"));
+  const row = el("div", { class: "row" });
+  const cp = el("button", { class: "btn small", type: "button" }, "Copy run sheet"); cp.onclick = () => copySheet(r); row.appendChild(cp);
+  const fz = el("button", { class: "btn small", type: "button" }, "Show route on map"); fz.onclick = () => fitRoute(r); row.appendChild(fz);
+  const rm = el("button", { class: "btn small", type: "button" }, "Remove officer"); rm.onclick = () => { S.officers = S.officers.filter((x) => x.id !== o.id); for (const k in S.pins) if (S.pins[k] === o.id) delete S.pins[k]; S.sel = S.officers[0] ? S.officers[0].id : null; save(); replan(); }; row.appendChild(rm);
+  head.appendChild(row); sh.appendChild(head);
+  if (!r.stops.length) { sh.appendChild(el("div", { class: "empty" }, "No visits fit this officer. Check their team, base and shift times, or move a visit to them from the map.")); return; }
+  const ol = el("ol", { class: "stops" });
+  const mk = (numText, cls, color) => { const n = el("div", { class: "num" + (cls ? " " + cls : "") }, numText); if (color) n.style.background = color; return n; };
+  // start
+  const li0 = el("li", { class: "stop" }); li0.appendChild(mk("P", "base")); const b0 = el("div", { class: "sbody" });
+  b0.appendChild(el("div", { class: "stime" }, o.start)); b0.appendChild(el("div", { class: "stitle" }, "Leave " + st.name + " police station")); b0.appendChild(el("div", { class: "sdet" }, "Collect kit, check radio and body-worn video"));
+  li0.appendChild(b0); ol.appendChild(li0);
+  r.stops.forEach((vi, k) => {
+    const v = VISITS[vi]; const a = r.ev.arr[k]; const leg = r.legs[k];
+    const li = el("li", { class: "stop" }); li.appendChild(mk(String(k + 1), "", TYPES[v.type].color)); const b = el("div", { class: "sbody" });
+    const tm = el("div", { class: "stime" }, fmt(a.arrive)); tm.appendChild(el("span", {}, " to " + fmt(a.arrive + v.mins * 60))); b.appendChild(tm);
+    const tt = el("div", { class: "stitle" }, TYPES[v.type].short + ", " + v.area);
+    if (v.overdue) tt.appendChild(el("span", { class: "tag bad" }, "Overdue")); if (v.risk) tt.appendChild(el("span", { class: "tag " + (/high/i.test(v.risk) ? "bad" : "warn") }, v.risk)); if (v.spec) tt.appendChild(el("span", { class: "tag navy" }, "Two offender managers"));
+    b.appendChild(tt);
+    b.appendChild(el("div", { class: "sdet" }, v.ref + " · " + v.flags[0] + (a.wait > 59 ? " · wait " + dur(a.wait) + " for the safe time window" : "")));
+    b.appendChild(legBlock(leg, k === 0 ? st.name + " police station" : "the visit address", "Arrive at stop " + (k + 1) + ": " + TYPES[v.type].short.toLowerCase() + " in " + v.area + ". The pin is a fictional location."));
+    li.appendChild(b); ol.appendChild(li);
+  });
+  const lastLeg = r.legs[r.legs.length - 1];
+  const liE = el("li", { class: "stop" }); liE.appendChild(mk("P", "base")); const bE = el("div", { class: "sbody" });
+  bE.appendChild(el("div", { class: "stime" }, fmt(r.ev.finish))); bE.appendChild(el("div", { class: "stitle" }, "Back at " + st.name));
+  bE.appendChild(el("div", { class: "sdet" }, S.admin ? S.admin + " minutes to update Niche and ViSOR before " + o.end : "Shift ends " + o.end));
+  bE.appendChild(legBlock(lastLeg, "the visit address", "Arrive back at " + st.name + " police station."));
+  liE.appendChild(bE); ol.appendChild(liE);
+  sh.appendChild(ol);
+}
+function legBlock(leg, fromName, toText) {
+  const wrapD = el("div");
+  const d = el("div", { class: "drive" }, "Drive " + dur(leg.secs) + ", " + miles(leg.geo.metres));
+  const btn = el("button", { class: "dirbtn", type: "button", "aria-expanded": "false" }, "Directions");
+  const ol = el("ol", { class: "dirs" }); ol.hidden = true;
+  btn.onclick = () => {
+    if (!ol.childNodes.length) steps(leg.arcs, fromName, toText).forEach((s) => { const li = el("li", {}, s.t + (s.d ? " " : "")); if (s.d) li.appendChild(el("span", {}, "· " + s.d)); ol.appendChild(li); });
+    ol.hidden = !ol.hidden; btn.setAttribute("aria-expanded", String(!ol.hidden)); btn.textContent = ol.hidden ? "Directions" : "Hide directions";
+  };
+  d.appendChild(btn); wrapD.appendChild(d); wrapD.appendChild(ol); return wrapD;
+}
+function copySheet(r) {
+  const o = r.o, st = stById[o.base]; const L2 = [];
+  L2.push("DAY OF ACTION RUN SHEET (MOCK-UP, FICTIONAL DATA)", o.name + " · " + TEAMS[o.team], "Start " + o.start + " at " + st.name + " police station", "");
+  r.stops.forEach((vi, k) => { const v = VISITS[vi], a = r.ev.arr[k]; L2.push((k + 1) + ". " + fmt(a.arrive) + "  " + TYPES[v.type].short + ", " + v.area + "  (" + v.ref + ")");
+    steps(r.legs[k].arcs, k === 0 ? st.name + " police station" : "the visit address", "Arrive at stop " + (k + 1)).forEach((s) => L2.push("     - " + s.t + (s.d ? " (" + s.d + ")" : ""))); });
+  L2.push("", "Back at " + st.name + " " + fmt(r.ev.finish) + " · " + miles(r.metres) + " · driving " + dur(r.ev.drive));
+  const txt = L2.join("\n");
+  const fallback = () => { const ta = el("textarea"); ta.value = txt; ta.style.cssText = "position:fixed;left:-9999px"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); toast("Run sheet copied"); } catch (e) { toast("Copy blocked by this browser"); } ta.remove(); };
+  try { navigator.clipboard.writeText(txt).then(() => toast("Run sheet copied"), fallback); } catch (e) { fallback(); }
+}
+function fitRoute(r) { const pts = [stById[r.o.base]].concat(r.stops.map((vi) => VISITS[vi])); fitPts(pts, 80); }
+function selectOfficer(id, zoom) { S.sel = id; closePop(); renderOfficers(); renderSheet(); const r = S.plan && S.plan.routes[id]; if (zoom && r) fitRoute(r); else draw(); }
+let toastT = 0; function toast(t) { let d = document.querySelector(".toast"); if (!d) { d = el("div", { class: "toast", role: "status" }); document.body.appendChild(d); } d.textContent = t; clearTimeout(toastT); toastT = setTimeout(() => d.remove(), 2200); }
+function replan() { if (!S.ready) return; plan(); renderAll(); }
+
+/* controls */
+STATIONS.forEach((s) => $("fBase").appendChild(el("option", { value: s.id }, s.name + (s.approx ? " (approximate location)" : ""))));
+Object.keys(TYPES).forEach((t) => {
+  const b = el("button", { class: "chip", type: "button", "aria-pressed": "true" }); b.appendChild(el("span", { class: "ic " + t, "aria-hidden": "true" })); b.appendChild(document.createTextNode(TYPES[t].label + " (" + VISITS.filter((v) => v.type === t).length + ")"));
+  b.onclick = () => { S.types[t] = !S.types[t]; b.setAttribute("aria-pressed", String(S.types[t])); replan(); }; $("typeChips").appendChild(b);
+});
+$("sAdmin").onchange = (e) => { S.admin = +e.target.value; replan(); };
+$("sReach").onchange = (e) => { S.reach = +e.target.value; replan(); };
+$("addForm").addEventListener("submit", (e) => {
+  e.preventDefault(); const name = $("fName").value.trim(); const msg = $("formMsg");
+  if (!name) { msg.textContent = "Enter the officer's name so the run sheet can show it."; msg.hidden = false; $("fName").focus(); return; }
+  if (tmin($("fEnd").value || "16:00") <= tmin($("fStart").value || "09:15")) { msg.textContent = "The finish time needs to be after the start time."; msg.hidden = false; return; }
+  msg.hidden = true;
+  const o = { id: "o" + (uid++), name, base: $("fBase").value, team: $("fTeam").value, start: $("fStart").value || "09:15", end: $("fEnd").value || "16:00" };
+  o.color = OFFCOL[S.officers.length % OFFCOL.length]; S.officers.push(o); S.sel = o.id; $("fName").value = ""; save(); replan(); const r = S.plan.routes[o.id]; if (r) fitRoute(r);
+  toast(r && r.stops.length ? "Route built: " + r.stops.length + " visits for " + name : "Added " + name + ". No visits fit yet");
+});
+$("clearOff").onclick = () => {
+  const ex = S.officers.filter((o) => o.name.endsWith(EX)).length;
+  if (!ex) { toast("No example officers left"); return; }
+  S.officers = S.officers.filter((o) => !o.name.endsWith(EX)); S.pins = {}; S.sel = S.officers[0] ? S.officers[0].id : null; save(); replan(); toast("Example officers removed. Add your own below"); $("fName").focus();
+};
+$("devBtn").onclick = () => { $("dev").hidden = false; $("devClose").focus(); };
+$("devClose").onclick = () => { $("dev").hidden = true; $("devBtn").focus(); };
+$("dev").addEventListener("click", (e) => { if (e.target === $("dev")) $("dev").hidden = true; });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") { if (!$("dev").hidden) { $("dev").hidden = true; $("devBtn").focus(); } else closePop(); } });
+$("resync").onclick = () => {
+  const s = $("sync"), t = $("syncText"); if (s.classList.contains("busy")) return; s.classList.add("busy");
+  const msgs = ["Querying ViSOR for visits due…", "Pulling bail conditions from Niche…", "Pulling Clare's Law applications…", "Matching addresses to the map…"];
+  let i = 0; t.textContent = msgs[0];
+  const iv = setInterval(() => { i++; if (i < msgs.length) { t.textContent = msgs[i]; return; } clearInterval(iv); s.classList.remove("busy");
+    const d = new Date(); const hh = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+    t.textContent = ""; const b = el("b", {}, "Niche RMS"); t.appendChild(b); t.appendChild(document.createTextNode(" · synced " + hh + " · " + VISITS.length + " records (simulated)")); replan(); toast("Synced. Routes rebuilt"); }, 650);
+};
+
+/* ---------------- boot ---------------- */
+function setLoad(t, p, s) { $("loadT").textContent = t; $("loadP").style.width = Math.round(p * 100) + "%"; if (s) $("loadS").textContent = s; }
+async function boot() {
+  initOfficers();
+  await new Promise((r) => setTimeout(r, 30));
+  decodeGraph(); resize(); fit(BOUNDS, 40); draw();
+  setLoad("Working out road travel times", 0.05, "From 6 stations and " + VISITS.length + " visits over the real road network");
+  for (let i = 0; i < NP; i++) {
+    const { dist, pred } = dijkstra(PTS[i]); PRED[i] = pred;
+    for (let j = 0; j < NP; j++) MT[i * NP + j] = dist[PTS[j]];
+    if (i % 4 === 3) { setLoad("Working out road travel times", (i + 1) / NP, (i + 1) + " of " + NP + " start points"); await new Promise((r) => setTimeout(r, 0)); }
+  }
+  S.ready = true; plan(); renderAll();
+  const r = S.plan.routes[S.sel]; if (r && r.stops.length) fitRoute(r);
+  $("loader").hidden = true;
+}
+window.addEventListener("resize", () => { resize(); placePop(); });
+if (window.ResizeObserver) new ResizeObserver(() => resize()).observe(wrap);
+window.__S=()=>S;window.__f=fmt;window.__m=miles;
+boot();
+</script>
