@@ -145,6 +145,41 @@ canvas#map.drag{cursor:grabbing}
 .dirs{margin:4px 0 2px;padding:10px 12px 10px 32px;background:var(--soft);border-radius:9px;font-size:14px;display:flex;flex-direction:column;gap:5px}
 .dirs li span{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 .empty{padding:24px 18px;color:var(--muted)}
+.viewas{display:flex;flex-direction:column;gap:2px;font-size:12px;color:#b9c9e3}
+.viewas select{min-height:40px;border-radius:8px;border:1px solid #4a72ad;background:var(--navy-2);color:#fff;padding:0 8px;font-size:14px;max-width:270px}
+.offOnly{display:none}
+body.officer-view .supOnly{display:none!important}
+body.officer-view .offOnly{display:block;background:#e3ebf7;color:var(--navy);border-radius:8px;padding:8px 10px;font-weight:600}
+.phonewrap{position:fixed;inset:0;z-index:25;background:rgba(9,22,44,.72);display:flex;align-items:center;justify-content:center;gap:32px;padding:16px}
+.phoneside{color:#fff;max-width:340px;display:flex;flex-direction:column;gap:10px;font-size:15px}
+.phoneside h2{margin:0;font-size:24px}
+.phoneside .btn{color:var(--ink);align-self:flex-start}
+.ptop{position:relative}
+.px{position:absolute;top:8px;right:10px;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.16);color:#fff;font-size:22px;line-height:1}.phoneside ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}.phoneside p{margin:0;color:#d5e0f2}
+.phone{width:390px;max-width:100%;height:min(820px,calc(100vh - 32px));background:#0b1220;border-radius:46px;padding:11px;box-shadow:0 20px 60px rgba(0,0,0,.45);display:flex}
+.screen{flex:1;border-radius:36px;overflow:hidden;background:#fff;display:flex;flex-direction:column;min-width:0}
+.ptop{background:var(--navy);color:#fff;padding:22px 16px 12px;display:flex;gap:12px;align-items:center}
+.ptop.site{background:var(--ok)}
+.pico{width:46px;height:52px;flex:none;color:var(--hivis)}
+.ptop.site .pico{color:#fff}
+.ptxt{display:flex;flex-direction:column;min-width:0;padding-right:34px}.ptxt b{font-size:26px;line-height:1.1}.ptxt span{font-size:16px;line-height:1.25}
+.pmapbox{position:relative;flex:1 1 40%;min-height:150px}
+.pmapbox canvas{position:absolute;inset:0;width:100%;height:100%}
+.peta{position:absolute;left:10px;top:10px;background:rgba(255,255,255,.95);border-radius:8px;padding:4px 10px;font-weight:700;font-size:14px;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.pgps{position:absolute;right:8px;bottom:6px;font-size:11px;background:rgba(255,255,255,.85);padding:1px 6px;border-radius:4px;color:#3b4b63}
+.pcard{flex:1 1 52%;overflow:auto;padding:12px 14px 18px;display:flex;flex-direction:column;gap:9px;border-top:1px solid var(--line);font-size:14.5px}
+.pcard h3{margin:0;font-size:19px;display:flex;align-items:center;gap:8px}
+.pcrew{font-size:12.5px;color:var(--muted)}
+.pnext{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--navy-3)}
+.pwho{display:flex;flex-direction:column;background:var(--soft);border-radius:9px;padding:8px 10px}
+.pmarks,.plist{display:flex;flex-direction:column;gap:5px}
+.plist ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px}
+.pbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;position:sticky;top:-12px;background:#fff;padding-block:4px;z-index:1}
+.pbtns .btn:only-child{grid-column:1 / -1}
+.chk{display:flex;gap:10px;align-items:center;min-height:40px;border-bottom:1px solid var(--soft)}
+.chk input{width:22px;height:22px}
+@media (max-width:900px){.phoneside{display:none}}
+@media (max-width:760px){.viewas{width:100%}.viewas select{max-width:none;width:100%}.phonewrap{padding:0}.phone{border-radius:0;padding:0;height:100%;width:100%}.screen{border-radius:0}}
 .also{background:#eef6f1;border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:3px}
 .onsite{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .onsite .field label{font-size:12.5px}
@@ -201,9 +236,10 @@ canvas#map.drag{cursor:grabbing}
       </div>
       <div class="sync" id="sync" role="status">
         <span class="dot" aria-hidden="true"></span>
-        <span id="syncText"><b>Niche + ViSOR</b> · synced 07:42 · <span id="recCount">113</span> records from 5 teams (simulated)</span>
+        <span id="syncText"><b>GRS + Niche + ViSOR</b> · synced 07:42 · 26 officers on duty, 113 visits (simulated)</span>
         <button class="btn dark small" id="resync" type="button">Re-sync</button>
       </div>
+      <div class="viewas"><label for="viewAs">Signed in as (simulated)</label><select id="viewAs"></select></div>
       <button class="btn dark" id="devBtn" type="button">Developer notes</button>
     </header>
     <div class="chequer" aria-hidden="true"></div>
@@ -218,9 +254,9 @@ canvas#map.drag{cursor:grabbing}
           <div class="kpis" id="kpis"></div>
         </section>
         <section class="sec" aria-labelledby="offH">
-          <div class="row" style="justify-content:space-between"><h2 id="offH">Crews of two on the day</h2><button class="btn small" id="clearOff" type="button">Clear examples</button></div>
+          <div class="row" style="justify-content:space-between"><h2 id="offH" title="Pulled from the duty roster (GRS) in production">Crews of two on the day</h2><p class="note offOnly" id="nkNote">Need-to-know view: you only see your own crew's visits. Other teams' work is hidden.</p><button class="btn small supOnly" id="clearOff" type="button">Clear examples</button></div>
           <div class="offs" id="offs"></div>
-          <form id="addForm" class="sec" style="padding:12px;border:1px dashed #b9c3d3;border-radius:10px;gap:10px" novalidate>
+          <form id="addForm" class="sec supOnly" style="padding:12px;border:1px dashed #b9c3d3;border-radius:10px;gap:10px" novalidate>
             <div class="row">
               <div class="field" style="flex-basis:100%"><label for="fName">Officer name and collar number</label><input id="fName" placeholder="e.g. DC 4512 Rhys Morgan" autocomplete="off"></div>
             </div>
@@ -242,7 +278,7 @@ canvas#map.drag{cursor:grabbing}
             <p class="note">New officers are paired automatically with someone free at the same station, a specialist with a BCU officer first. Change any pairing from the crew's run sheet.</p>
           </form>
         </section>
-        <section class="sec" aria-labelledby="typH">
+        <section class="sec supOnly" aria-labelledby="typH">
           <h2 id="typH">Each team's demand</h2>
           <div class="chips" id="typeChips"></div>
           <h2>Average time on site, from arrival</h2>
@@ -260,7 +296,7 @@ canvas#map.drag{cursor:grabbing}
           </div>
           <p class="note"><b>Rules the planner follows.</b> Every visit is done by two officers, and nobody is sent out alone. The officer from the team that owns a visit always leads it: MOSOVO for offender visits (specialist-only visits need two MOSOVO officers), the Online Investigation Team for device checks, the Domestic Abuse Unit for disclosures and protection order checks, and Integrated Offender Management for IOM visits. Bail checks are picked up along any crew's route, led by the BCU officer. When several teams need the same address, the planner tries to send one crew that can do all of it. Overdue and higher-risk visits go first, and times an applicant can safely be seen are kept.</p>
         </section>
-        <section class="sec" aria-labelledby="unH">
+        <section class="sec supOnly" aria-labelledby="unH">
           <h2 id="unH">Not allocated</h2>
           <div class="unal" id="unal"></div>
         </section>
@@ -299,6 +335,28 @@ canvas#map.drag{cursor:grabbing}
   </div>
 </div>
 
+<div class="phonewrap" id="phoneWrap" hidden>
+  <div class="phoneside">
+    <h2>What the officer sees</h2>
+    <p>This is the crew's phone. On a force phone it follows GPS. Here a simulated drive follows the real road route.</p>
+    <ul>
+      <li>Turn-by-turn directions to the next stop</li>
+      <li>Who they are about to see, and why</li>
+      <li>Warning markers, conditions and what to look out for</li>
+      <li>An on-scene checklist, then straight on to the next stop</li>
+    </ul>
+    <p>Only the two officers in this crew can open this briefing, and only during their shift.</p>
+    <button class="btn" id="pClose" type="button">Close phone view</button>
+  </div>
+  <div class="phone" role="dialog" aria-modal="true" aria-label="Phone sat nav">
+    <div class="screen">
+      <div class="ptop" id="pTop"><button class="px" id="pX" type="button" aria-label="Close phone view">×</button><svg class="pico" viewBox="0 0 40 46" aria-hidden="true"><g id="pIco" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"></g></svg><div class="ptxt"><b id="pDist"></b><span id="pText"></span></div></div>
+      <div class="pmapbox"><canvas id="pmap" aria-label="Live map following the crew" role="img"></canvas><div class="peta" id="pEta"></div><div class="pgps">Simulated position · GPS on a force phone</div></div>
+      <div class="pcard" id="pCard"></div>
+    </div>
+  </div>
+</div>
+
 <div class="modal" id="dev" hidden>
   <div role="dialog" aria-modal="true" aria-labelledby="devH">
     <div class="row" style="justify-content:space-between"><h2 id="devH">Developer notes</h2><button class="btn" id="devClose" type="button">Close</button></div>
@@ -306,6 +364,16 @@ canvas#map.drag{cursor:grabbing}
     <p>Several teams in the Strategic Public Protection Command visit offenders' home addresses, and each one plans its own visits. MOSOVO visits registered sex offenders. The Online Investigation Team checks devices under Sexual Harm Prevention Orders. The Domestic Abuse Unit gives Clare's Law disclosures and checks protection orders. Integrated Offender Management visits its cohort. BCU officers check bail addresses. Planning in silos sends separate crews down the same streets, sometimes to the same front door, on the same day.</p>
     <p>This tool brings all of that demand into one plan. It pairs officers from different teams into crews of two and routes each crew so they work together. The specialist always leads their own team's visit, and one trip covers every team that needs the same address.</p>
     <p>This page is a working mock-up. Routing, allocation and directions run fully in the browser against a real road network. Only the case data is invented. Use this page as the brief for a production build.</p>
+    <h3>How the production version would work</h3>
+    <table>
+      <tr><th>Need</th><th>How</th></tr>
+      <tr><td>Who is working today</td><td>Read the day's duty roster from the force rostering systems (GRS or FIRMS): officer, team, station, shift times, skills and vehicles. Only officers on duty are planned. Abstractions and sickness drop out automatically.</td></tr>
+      <tr><td>What needs doing</td><td>Read-only feeds of visits due: ViSOR (offender visits, device checks), Niche RMS (bail conditions, Clare's Law applications, protection orders) and the IOM cohort. Addresses are matched across teams by AddressBase UPRN, so a shared address shows up straight away.</td></tr>
+      <tr><td>Locked down</td><td>Force sign-in (Microsoft Entra ID) with roles. A supervisor sees the plan for their area. An officer sees only their own crew's visits, released at the start of their shift and withdrawn at the end. Every view and every change is audited. A data protection impact assessment, MoPI-compliant retention and the force's security accreditation are needed before go-live.</td></tr>
+      <tr><td>Sat nav on the phone</td><td>An app on force-managed phones, controlled by the force's mobile device management. It uses the phone's GPS for turn-by-turn directions, re-routes when the crew goes off course, and moves on to the next visit automatically. Nothing is stored on the phone after the shift.</td></tr>
+      <tr><td>Briefing at the door</td><td>For each stop: who the subject is, PNC and Niche warning markers, current conditions (registration requirements, Sexual Harm Prevention Order, bail, licence, protection order), what to look out for, and an on-scene checklist. Results are written back to ViSOR or Niche at the end.</td></tr>
+      <tr><td>Live view for supervisors</td><td>Each crew's position and progress, so visits can be moved during the day if a crew is pulled to an incident.</td></tr>
+    </table>
     <h3>What is real and what is mocked</h3>
     <table>
       <tr><th>Part</th><th>In this mock-up</th><th>In production</th></tr>
@@ -313,7 +381,7 @@ canvas#map.drag{cursor:grabbing}
       <tr><td>Base map</td><td>Coastline, rivers, woodland, local authority boundaries and place names, drawn on a canvas.</td><td>Ordnance Survey basemap tiles under the Public Sector Geospatial Agreement.</td></tr>
       <tr><td>Police stations</td><td>Real stations from Overture Maps places. Cockett and Treharris are placed by hand and are approximate.</td><td>Force estates register.</td></tr>
       <tr><td>Visits</td><td>113 invented records across six visit types and five teams. 13 addresses are wanted by more than one team. Pins are snapped to real residential streets but are not real addresses.</td><td>Read-only feeds: ViSOR (offender visits, device checks), Niche RMS (bail, Clare's Law applications, protection orders) and the IOM cohort list. All are geocoded to AddressBase UPRNs so the same address is matched across teams.</td></tr>
-      <tr><td>"Niche sync"</td><td>Animation only. Nothing is fetched.</td><td>Scheduled extract or API, with an audit log of who viewed which record.</td></tr>
+      <tr><td>"GRS, Niche and ViSOR sync"</td><td>Animation only. Nothing is fetched. The example officers stand in for the duty roster.</td><td>Scheduled extract or API, with an audit log of who viewed which record.</td></tr>
     </table>
     <h3>How the planner works</h3>
     <ol>
@@ -476,7 +544,7 @@ const DEFAULT_PAIRS = [["DC 4512 Rhian Hughes", "PC 6402 Elin Vaughan"], ["PC 33
 let uid = 1;
 const S = {
   officers: [], pairs: {}, crews: [], solo: [], sel: null, types: Object.fromEntries(Object.keys(TYPES).map((t) => [t, true])), admin: 30, reach: 40,
-  pins: {}, plan: null, ready: false
+  pins: {}, plan: null, ready: false, viewer: null
 };
 function loadSaved() {
   try { const raw = localStorage.getItem("doa-planner-v3"); if (raw) { const o = JSON.parse(raw); if (Array.isArray(o.officers) && o.officers.length) return o; } } catch (e) {}
@@ -522,7 +590,8 @@ function buildCrews() {
   S.crews = crews; S.solo = free();
 }
 const crewOf = (oid) => S.crews.find((c) => c.lead.id === oid || c.mate.id === oid);
-const selCrewId = () => { const c = crewOf(S.sel); return c ? c.id : null; };
+const selCrewId = () => { if (PHONE) return PH.crew; const c = crewOf(S.sel); return c ? c.id : null; };
+const focusCrew = () => PHONE ? PH.crew : (S.viewer ? (selCrewId() || "none") : null);
 const has = (c, t) => c.lead.team === t || c.mate.team === t;
 function leadFor(c, v) { // [lead, with]: the officer from the team that owns the visit leads
   const need = TYPES[v.type].need;
@@ -675,7 +744,7 @@ function steps(arcs, fromName, toText) {
     }
     gs.push(g);
   }
-  const out = [];
+  const out = []; let acc = 0;
   gs.forEach((g, i) => {
     const name = g.label || CLSNAME[g.cls];
     let t;
@@ -689,7 +758,7 @@ function steps(arcs, fromName, toText) {
       else if (ad < 155) t = "Turn " + side + " onto " + name;
       else t = "Turn around and take " + name;
     }
-    out.push({ t, d: miles(g.len) });
+    out.push({ t, d: miles(g.len), at: acc }); acc += g.len;
   });
   out.push({ t: toText, d: "" });
   return out;
@@ -702,7 +771,7 @@ function bearingAlong(xs, end) {
 }
 
 /* ---------------- map ---------------- */
-const cv = $("map"), ctx = cv.getContext("2d"); const wrap = $("mapwrap");
+const cv = $("map"); let ctx = cv.getContext("2d"); const wrap = $("mapwrap");
 const V = { cx: 0, cy: 0, s: 0.01, w: 800, h: 600, dpr: 1 };
 const BOUNDS = (() => { let a = 1e12, b = 1e12, c = -1e12, d = -1e12; STATIONS.concat(VISITS).forEach((p) => { a = Math.min(a, p.X); c = Math.max(c, p.X); b = Math.min(b, p.Y); d = Math.max(d, p.Y); }); return [a, b, c, d]; })();
 function ringsToXY(rings) { return rings.map((r) => { const f = new Float32Array(r.length); for (let i = 0; i < r.length; i += 2) { f[i] = PX(r[i] / 1e5); f[i + 1] = PY(r[i + 1] / 1e5); } return f; }); }
@@ -760,17 +829,17 @@ function draw() {
   // labels
   drawPlaces();
   // routes
-  hits = [];
+  hits = []; const ONLY = focusCrew();
   if (S.plan) {
     const SC = selCrewId(); const selR = S.plan.routes[SC];
-    for (const id in S.plan.routes) { if (id === SC) continue; drawRoute(S.plan.routes[id], false); }
+    for (const id in S.plan.routes) { if (id === SC || ONLY) continue; drawRoute(S.plan.routes[id], false); }
     if (selR) drawRoute(selR, true);
   }
   // pins
   const asg = assignMap();
   const SC2 = selCrewId(); const order = VISITS.slice().sort((a, b) => (asg[a.id] && asg[a.id].oid === SC2) - (asg[b.id] && asg[b.id].oid === SC2));
-  for (const v of order) drawPin(v, asg[v.id]);
-  for (const s of STATIONS) drawStation(s);
+  for (const v of order) { if (ONLY && !(asg[v.id] && asg[v.id].oid === ONLY)) continue; drawPin(v, asg[v.id]); }
+  for (const s of STATIONS) { if (ONLY) { const fc = S.crews.find((x) => x.id === ONLY); if (!fc || fc.base !== s.id) continue; } drawStation(s); }
 }
 function assignMap() {
   const m = {}; if (!S.plan) return m;
@@ -894,7 +963,7 @@ function openPop(v) {
     p.appendChild(box);
   }
   const elig = S.crews.filter((c) => eligible(c, v));
-  const fld = el("div", { class: "field" }); const lid = "mv" + v.id; fld.appendChild(el("label", { for: lid }, "Give this visit to a crew"));
+  const fld = el("div", { class: "field supOnly" }); const lid = "mv" + v.id; fld.appendChild(el("label", { for: lid }, "Give this visit to a crew"));
   const sel = el("select", { id: lid }); sel.appendChild(el("option", { value: "" }, "Let the planner decide"));
   elig.forEach((c) => sel.appendChild(el("option", { value: c.lead.id }, c.name + " · " + stById[c.base].name)));
   { const pc = S.pins[v.id] && crewOf(S.pins[v.id]); sel.value = pc ? pc.lead.id : ""; } sel.onchange = () => { if (sel.value) S.pins[v.id] = sel.value; else delete S.pins[v.id]; replan(); openPop(v); toast(sel.value ? "Visit moved and routes rebuilt" : "Visit handed back to the planner"); };
@@ -907,7 +976,7 @@ function closePop() { popV = null; $("pop").hidden = true; }
 function el(tag, attrs, text) { const n = document.createElement(tag); for (const k in (attrs || {})) n.setAttribute(k, attrs[k]); if (text != null) n.textContent = text; return n; }
 
 /* ---------------- panels ---------------- */
-function renderAll() { renderKpis(); renderOfficers(); renderUnal(); renderSheet(); draw(); }
+function renderAll() { fillViewAs(); renderKpis(); renderOfficers(); renderUnal(); renderSheet(); draw(); }
 function renderKpis() {
   const k = $("kpis"); k.textContent = "";
   const cnt = (t) => VISITS.filter((v) => v.type === t).length;
@@ -932,6 +1001,7 @@ function renderOfficers() {
   const box = $("offs"); box.textContent = ""; const sc = selCrewId();
   if (!S.officers.length) box.appendChild(el("p", { class: "note" }, "No officers yet. Add officers below and they will be paired into crews of two."));
   S.crews.forEach((c) => {
+    if (S.viewer && c.id !== sc) return;
     const r = S.plan && S.plan.routes[c.id];
     const b = el("button", { class: "off", type: "button", "aria-pressed": String(c.id === sc) });
     const sw = el("span", { class: "swatch", "aria-hidden": "true" }); sw.style.background = c.color; b.appendChild(sw);
@@ -940,7 +1010,7 @@ function renderOfficers() {
     b.appendChild(el("span", { class: "meta" }, stById[c.base].name + " · " + TEAMS[c.lead.team] + " with " + TEAMS[c.mate.team] + " · " + c.start + " to " + c.end + (r && r.stops.length ? " · back " + fmt(r.ev.finish) : "")));
     b.onclick = () => selectOfficer(c.lead.id, true); box.appendChild(b);
   });
-  S.solo.forEach((o) => {
+  if (!S.viewer) S.solo.forEach((o) => {
     const d = el("div", { class: "solo" });
     d.appendChild(el("b", {}, o.name));
     d.appendChild(el("span", { class: "note" }, stById[o.base].name + " · " + TEAMS[o.team] + ". On their own, so they get no visits. Every visit needs two officers."));
@@ -983,11 +1053,11 @@ function renderSheet() {
     const t = el("span"); t.appendChild(el("b", {}, m.name)); t.appendChild(el("br"));
     const does = { MOSOVO: "Leads the offender visits", DAU: "Leads disclosures and protection order checks", POLIT: "Leads the device checks", IOM: "Leads the IOM visits", NPT: "Leads the bail checks and supports every visit" }[m.team];
     t.appendChild(el("span", { class: "note" }, TEAMS[m.team] + " · " + does)); row.appendChild(t);
-    const rm = el("button", { class: "btn small", type: "button", "aria-label": "Remove " + m.name }, "Remove"); rm.onclick = () => removeOfficer(m.id); row.appendChild(rm);
+    const rm = el("button", { class: "btn small supOnly", type: "button", "aria-label": "Remove " + m.name }, "Remove"); rm.onclick = () => removeOfficer(m.id); row.appendChild(rm);
     mem.appendChild(row);
   });
   head.appendChild(mem);
-  head.appendChild(pairSelect(o.lead, "Change " + shortName(o.lead) + "'s partner", [o.mate.id]));
+  const ps = pairSelect(o.lead, "Change " + shortName(o.lead) + "'s partner", [o.mate.id]); ps.classList.add("supOnly"); head.appendChild(ps); if (0) head.appendChild(pairSelect(o.lead, "Change " + shortName(o.lead) + "'s partner", [o.mate.id]));
   const sum = el("div", { class: "sum" });
   const late = r.stops.length && !r.ev.ok;
   [[r.stops.length, "Visits"], [miles(r.metres).replace(" miles", ""), "Miles"], [dur(r.ev.drive), "Driving"], [r.stops.length ? fmt(r.ev.finish) : o.start, "Back at base"]].forEach(([a, b]) => { const d = el("div"); d.appendChild(el("b", {}, String(a))); d.appendChild(el("span", {}, b)); sum.appendChild(d); });
@@ -996,6 +1066,7 @@ function renderSheet() {
   const row = el("div", { class: "row" });
   const cp = el("button", { class: "btn small", type: "button" }, "Copy run sheet"); cp.onclick = () => copySheet(r); row.appendChild(cp);
   const fz = el("button", { class: "btn small", type: "button" }, "Show route on map"); fz.onclick = () => fitRoute(r); row.appendChild(fz);
+  const ph = el("button", { class: "btn small hv", type: "button" }, "Open phone sat nav"); ph.onclick = () => openPhone(o.id); row.prepend(ph);
   head.appendChild(row); sh.appendChild(head);
   if (!r.stops.length) { sh.appendChild(el("div", { class: "empty" }, "No visits fit this crew. Check the teams, base and shift times, or move a visit to them from the map.")); return; }
   const ol = el("ol", { class: "stops" });
@@ -1080,15 +1151,179 @@ $("clearOff").onclick = () => {
 $("devBtn").onclick = () => { $("dev").hidden = false; $("devClose").focus(); };
 $("devClose").onclick = () => { $("dev").hidden = true; $("devBtn").focus(); };
 $("dev").addEventListener("click", (e) => { if (e.target === $("dev")) $("dev").hidden = true; });
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") { if (!$("dev").hidden) { $("dev").hidden = true; $("devBtn").focus(); } else closePop(); } });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") { if (!$("phoneWrap").hidden) { closePhone(); return; } if (!$("dev").hidden) { $("dev").hidden = true; $("devBtn").focus(); } else closePop(); } });
 $("resync").onclick = () => {
   const s = $("sync"), t = $("syncText"); if (s.classList.contains("busy")) return; s.classList.add("busy");
-  const msgs = ["ViSOR: offender visits and device checks due…", "Niche: bail conditions…", "Niche: Clare's Law applications and protection orders…", "IOM cohort: visits due…", "Matching addresses across teams…"];
+  const msgs = ["GRS: who is on duty today, by team and station…", "ViSOR: offender visits and device checks due…", "Niche: bail conditions…", "Niche: Clare's Law applications and protection orders…", "IOM cohort: visits due…", "Matching addresses across teams…"];
   let i = 0; t.textContent = msgs[0];
   const iv = setInterval(() => { i++; if (i < msgs.length) { t.textContent = msgs[i]; return; } clearInterval(iv); s.classList.remove("busy");
     const d = new Date(); const hh = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
-    t.textContent = ""; const b = el("b", {}, "Niche + ViSOR"); t.appendChild(b); t.appendChild(document.createTextNode(" · synced " + hh + " · " + VISITS.length + " records from 5 teams (simulated)")); replan(); toast("Synced. Routes rebuilt"); }, 650);
+    t.textContent = ""; const b = el("b", {}, "GRS + Niche + ViSOR"); t.appendChild(b); t.appendChild(document.createTextNode(" · synced " + hh + " · " + S.officers.length + " officers on duty, " + VISITS.length + " visits (simulated)")); replan(); toast("Synced. Routes rebuilt"); }, 650);
 };
+
+
+/* ---------------- officer briefing (fictional) ---------------- */
+function seeded(v) { let h = 7; for (const ch of v.id + v.ref) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return () => { h = (h * 1103515245 + 12345) >>> 0; return h / 4294967296; }; }
+const MARKERS = ["Violent", "Weapons", "Drugs", "Mental health", "Self-harm", "Escaper", "Ailment"];
+const MARKER_TIP = { Violent: "Previous assault on police. Two officers stay together; no entry if alone.", Weapons: "Knife found at a previous address. Search on contact if lawful.", Drugs: "Possible drug paraphernalia, so wear gloves.", "Mental health": "Known to mental health services. Calm approach; consider the triage line.", "Self-harm": "History of self-harm. Check welfare before leaving.", Escaper: "Has run from officers before. One officer covers the rear.", Ailment: "Declared medical condition. Ask about medication." };
+function brief(v) {
+  const rnd = seeded(v);
+  const markers = v.type === "dvds" ? [] : MARKERS.filter(() => rnd() < 0.24).slice(0, 3);
+  const who = { rso: "Registered sex offender", device: "Registered offender on a Sexual Harm Prevention Order", dvds: "Applicant (potential victim). Not the subject", dvpo: "Person subject to a protection order", iom: "IOM cohort nominal", bail: "Person on police or court bail" }[v.type];
+  const conds = {
+    rso: ["Notify any change of address within 3 days", "Notify any new vehicle or bank account", "No unsupervised contact with children under 16"],
+    device: ["Declare every internet-enabled device", "Allow police to inspect devices on request", "Do not delete internet history"],
+    dvds: ["See the applicant alone", "Do not disclose if the subject is present or nearby", "Agree a safety plan and a safe way to make contact"],
+    dvpo: ["Must not enter or go within 100 metres of the victim's address", "No contact with the victim, directly or through others"],
+    iom: ["Licence: live at the approved address", "Licence: drug testing as directed", "Licence: keep appointments with probation"],
+    bail: v.flags.filter((f) => f.startsWith("Condition")).map((f) => f.replace("Condition: ", ""))
+  }[v.type];
+  const look = v.flags.filter((f) => !f.startsWith("Condition")).concat(markers.map((m) => MARKER_TIP[m]));
+  const check = {
+    rso: ["Body-worn video on", "Confirm identity", "Walk through every room", "Check the declared vehicle", "Record on ViSOR"],
+    device: ["Body-worn video on", "List every device seen", "Run the device triage tool", "Seize undeclared devices", "Record on ViSOR"],
+    dvds: ["Body-worn video off unless agreed", "Confirm the subject is not present", "Give the disclosure wording", "Safety plan and referral", "Record on Niche"],
+    dvpo: ["Body-worn video on", "Confirm the person is not at the victim's address", "Check for contact attempts", "Record on Niche"],
+    iom: ["Body-worn video on", "Welfare and housing check", "Check licence conditions", "Record on Niche"],
+    bail: ["Body-worn video on", "Confirm the person lives and sleeps here", "Check bail conditions", "Record on Niche"]
+  }[v.type];
+  return { who, markers, conds: conds.length ? conds : ["See the bail record on Niche"], look, check };
+}
+
+/* ---------------- phone sat nav ---------------- */
+let PHONE = false;
+const PH = { crew: null, k: 0, d: 0, len: 0, cum: null, steps: null, play: false, mode: "drive", last: 0, raf: 0, done: {} };
+const pcv = () => $("pmap");
+function phRoute() { return S.plan.routes[PH.crew]; }
+function openPhone(crewId) {
+  const r = S.plan && S.plan.routes[crewId]; if (!r || !r.stops.length) { toast("This crew has no visits to drive to"); return; }
+  closePop(); PH.crew = crewId; PH.k = 0; PH.mode = "drive"; PH.play = false; PH.done = {}; prepLeg();
+  $("phoneWrap").hidden = false; sizePhone(); phCard(); phFrame(); $("pPlay").focus();
+}
+function closePhone() { PH.play = false; cancelAnimationFrame(PH.raf); $("phoneWrap").hidden = true; draw(); }
+function prepLeg() {
+  const r = phRoute(); const leg = r.legs[PH.k]; const xs = leg.geo.xs; const cum = [0];
+  for (let i = 2; i < xs.length; i += 2) cum.push(cum[cum.length - 1] + Math.hypot(xs[i] - xs[i - 2], xs[i + 1] - xs[i - 1]));
+  PH.cum = cum; PH.len = cum[cum.length - 1] || 1; PH.d = 0;
+  const st = stById[r.o.base]; const last = PH.k === r.stops.length;
+  const v = last ? null : VISITS[r.stops[PH.k]];
+  const s = steps(leg.arcs, PH.k === 0 ? st.name + " police station" : "the visit address", last ? "Arrive at " + st.name + " police station" : "Arrive at stop " + (PH.k + 1) + ": " + TYPES[v.type].short.toLowerCase() + ", " + v.area);
+  const k = PH.len / Math.max(1, leg.geo.metres); s.forEach((x) => x.at = (x.at || 0) * k); s[s.length - 1].at = PH.len;
+  PH.steps = s;
+}
+function posAt(d) {
+  const xs = phRoute().legs[PH.k].geo.xs, cum = PH.cum; let i = 1;
+  while (i < cum.length - 1 && cum[i] < d) i++;
+  const a = cum[i - 1], b = cum[i] || a + 1, t = Math.max(0, Math.min(1, (d - a) / Math.max(1e-6, b - a)));
+  const x0 = xs[2 * (i - 1)], y0 = xs[2 * (i - 1) + 1], x1 = xs[2 * i] !== undefined ? xs[2 * i] : x0, y1 = xs[2 * i + 1] !== undefined ? xs[2 * i + 1] : y0;
+  return { X: x0 + (x1 - x0) * t, Y: y0 + (y1 - y0) * t, ang: Math.atan2(y1 - y0, x1 - x0) };
+}
+const ARROW = {
+  left: '<path d="M30 40V22a6 6 0 0 0-6-6H10m8-8-8 8 8 8" />', right: '<path d="M10 40V22a6 6 0 0 1 6-6h14m-8-8 8 8-8 8" />',
+  ahead: '<path d="M20 40V6m-9 9 9-9 9 9" />', flag: '<path d="M10 40V6h20l-5 7 5 7H10" />', around: '<path d="M14 40V16a8 8 0 0 1 16 0v8m-7-6 7 7 7-7" />'
+};
+function arrowFor(t) { if (/^Arrive/.test(t)) return "flag"; if (/around/.test(t)) return "around"; if (/left/i.test(t)) return "left"; if (/right/i.test(t)) return "right"; return "ahead"; }
+function phNav() {
+  const top = $("pTop"); $("pEta").hidden = PH.mode !== "drive";
+  if (PH.mode === "onsite") { top.className = "ptop site"; $("pIco").innerHTML = ARROW.flag; $("pDist").textContent = "On scene"; $("pText").textContent = "Stop " + (PH.k + 1) + " of " + phRoute().stops.length + " · " + dur(VISITS[phRoute().stops[PH.k]].mins * 60) + " allowed"; return; }
+  if (PH.mode === "done") { top.className = "ptop site"; $("pIco").innerHTML = ARROW.flag; $("pDist").textContent = "Back at base"; $("pText").textContent = "All visits complete"; return; }
+  top.className = "ptop";
+  let i = PH.steps.findIndex((s, n) => n > 0 && s.at > PH.d + 5); if (i < 0) i = PH.steps.length - 1;
+  const show = PH.d < 40 ? PH.steps[0] : PH.steps[i];
+  const togo = PH.d < 40 ? 0 : Math.max(0, PH.steps[i].at - PH.d);
+  $("pIco").innerHTML = ARROW[arrowFor(show.t)];
+  $("pDist").textContent = PH.d < 40 ? "Start" : miles(togo * (phRoute().legs[PH.k].geo.metres / PH.len));
+  $("pText").textContent = show.t;
+  const left = (PH.len - PH.d) / PH.len * phRoute().legs[PH.k].secs;
+  $("pEta").textContent = "Arrive in " + dur(left) + " · " + miles((PH.len - PH.d) * (phRoute().legs[PH.k].geo.metres / PH.len)) + " to go";
+}
+function phFrame() {
+  const c = pcv(); const box = c.parentElement.getBoundingClientRect(); const dpr = Math.min(2, window.devicePixelRatio || 1);
+  if (c.width !== Math.round(box.width * dpr) || c.height !== Math.round(box.height * dpr)) { c.width = Math.round(box.width * dpr); c.height = Math.round(box.height * dpr); }
+  const p = PH.mode === "drive" ? posAt(PH.d) : (PH.mode === "done" ? { X: stById[phRoute().o.base].X, Y: stById[phRoute().o.base].Y, ang: 0 } : posAt(PH.len));
+  const saveV = Object.assign({}, V), saveCtx = ctx, saveHits = hits;
+  ctx = c.getContext("2d"); Object.assign(V, { w: box.width, h: box.height, dpr, cx: p.X, cy: p.Y + 60 / 0.14, s: 0.14 });
+  PHONE = true; try { draw(); } finally { PHONE = false; }
+  const x = sx(p.X), y = sy(p.Y);
+  ctx.save(); ctx.translate(x, y); ctx.fillStyle = "rgba(15,98,254,.18)"; ctx.beginPath(); ctx.arc(0, 0, 26, 0, Math.PI * 2); ctx.fill();
+  ctx.rotate(p.ang); ctx.fillStyle = "#0f62fe"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(14, 0); ctx.lineTo(-9, -10); ctx.lineTo(-4, 0); ctx.lineTo(-9, 10); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+  ctx = saveCtx; Object.assign(V, saveV); hits = saveHits;
+  phNav();
+}
+function phTick(ts) {
+  if (!PH.play) return;
+  const dt = PH.last ? Math.min(0.1, (ts - PH.last) / 1000) : 0; PH.last = ts;
+  const secs = Math.max(8, Math.min(28, 6 + PH.len / 450));
+  PH.d = Math.min(PH.len, PH.d + PH.len / secs * dt);
+  if (PH.d >= PH.len) { PH.play = false; arrive(); return; }
+  phFrame(); PH.raf = requestAnimationFrame(phTick);
+}
+function togglePlay() { if (PH.mode !== "drive") return; PH.play = !PH.play; PH.last = 0; phPlayBtn(); if (PH.play) PH.raf = requestAnimationFrame(phTick); }
+function phPlayBtn() { const b = $("pPlay"); if (!b) return; b.textContent = PH.play ? "Pause drive" : (PH.d > 0 ? "Resume drive" : "Start drive"); }
+function arrive() {
+  const r = phRoute(); PH.play = false; PH.d = PH.len;
+  if (PH.k >= r.stops.length) { PH.mode = "done"; } else PH.mode = "onsite";
+  phCard(); phFrame();
+}
+function nextLeg() { PH.done[PH.k] = true; PH.k++; PH.mode = "drive"; prepLeg(); phCard(); phFrame(); }
+function phCard() {
+  const r = phRoute(); const card = $("pCard"); card.textContent = "";
+  const crewLine = el("div", { class: "pcrew" }, r.o.name + " · " + stById[r.o.base].name);
+  card.appendChild(crewLine);
+  if (PH.mode === "done") {
+    card.appendChild(el("h3", {}, "Back at " + stById[r.o.base].name));
+    card.appendChild(el("p", {}, r.stops.length + " visits done, " + miles(r.metres) + " driven. " + (S.admin ? S.admin + " minutes set aside to update Niche and ViSOR." : "")));
+    const b = el("button", { class: "btn primary", type: "button" }, "Start again"); b.onclick = () => openPhone(PH.crew); card.appendChild(b); return;
+  }
+  const last = PH.k >= r.stops.length;
+  if (last) {
+    card.appendChild(el("div", { class: "pnext" }, "Final leg"));
+    card.appendChild(el("h3", {}, "Return to " + stById[r.o.base].name + " police station"));
+  } else {
+    const v = VISITS[r.stops[PH.k]]; const b = brief(v); const [ld, wt] = leadFor(r.o, v); const a = r.ev.arr[PH.k];
+    card.appendChild(el("div", { class: "pnext" }, (PH.mode === "onsite" ? "Now · " : "Next · ") + "Stop " + (PH.k + 1) + " of " + r.stops.length + " · planned " + fmt(a.arrive)));
+    const h = el("h3"); h.appendChild(el("span", { class: "ic " + v.type, "aria-hidden": "true" })); h.appendChild(document.createTextNode(TYPES[v.type].short + ", " + v.area)); card.appendChild(h);
+    card.appendChild(el("div", { class: "pair" }, "Lead: " + shortName(ld) + " · With: " + shortName(wt)));
+    const who = el("div", { class: "pwho" }); who.appendChild(el("b", {}, "Who: " + v.initials + " (fictional)")); who.appendChild(el("span", {}, b.who + " · " + v.ref + (v.risk ? " · risk " + v.risk : ""))); card.appendChild(who);
+    if (v.others.length) card.appendChild(el("div", { class: "tag ok" }, "Also due here: " + v.others.map((x) => TYPES[x.type].short.toLowerCase()).join(", ")));
+    const wm = el("div", { class: "pmarks" }); wm.appendChild(el("b", {}, "Warning markers"));
+    const chips = el("div", { class: "row" }); if (b.markers.length) b.markers.forEach((m) => chips.appendChild(el("span", { class: "tag bad" }, m))); else chips.appendChild(el("span", { class: "tag ok" }, "None recorded"));
+    wm.appendChild(chips); card.appendChild(wm);
+    const sec = (title, items) => { const d = el("div", { class: "plist" }); d.appendChild(el("b", {}, title)); const ul = el("ul"); items.forEach((t) => ul.appendChild(el("li", {}, t))); d.appendChild(ul); card.appendChild(d); };
+    sec(v.type === "dvds" ? "Safety rules" : "Conditions", b.conds);
+    if (b.look.length) sec("Look out for", b.look);
+    if (PH.mode === "onsite") {
+      const d = el("div", { class: "plist" }); d.appendChild(el("b", {}, "On-scene checklist"));
+      b.check.forEach((t, n) => { const id = "chk" + PH.k + "_" + n; const lab = el("label", { class: "chk", for: id }); const cb = el("input", { type: "checkbox", id }); lab.appendChild(cb); lab.appendChild(document.createTextNode(t)); d.appendChild(lab); });
+      card.appendChild(d);
+    }
+  }
+  const row = el("div", { class: "pbtns" });
+  if (PH.mode === "drive") {
+    const p = el("button", { class: "btn hv", type: "button", id: "pPlay" }); p.onclick = togglePlay; row.appendChild(p);
+    const s = el("button", { class: "btn", type: "button" }, last ? "Arrived at base" : "Arrived"); s.onclick = arrive; row.appendChild(s);
+  } else {
+    const n = el("button", { class: "btn primary", type: "button" }, PH.k + 1 >= r.stops.length ? "Visit done: head back to base" : "Visit done: next stop"); n.onclick = nextLeg; row.appendChild(n);
+  }
+  card.prepend(row); phPlayBtn(); card.scrollTop = 0;
+}
+function sizePhone() { phFrame(); }
+
+/* ---------------- signed-in view ---------------- */
+function fillViewAs() {
+  const s = $("viewAs"); const cur = S.viewer || ""; s.textContent = "";
+  s.appendChild(el("option", { value: "" }, "Supervisor: all crews"));
+  S.officers.forEach((o) => s.appendChild(el("option", { value: o.id }, "Officer: " + shortName(o) + " (" + (o.team === "NPT" ? "BCU" : o.team) + ")")));
+  s.value = S.officers.some((o) => o.id === cur) ? cur : ""; if (!s.value) S.viewer = null;
+}
+$("viewAs").onchange = (e) => {
+  S.viewer = e.target.value || null; if (S.viewer) S.sel = S.viewer;
+  document.body.classList.toggle("officer-view", !!S.viewer); closePop(); renderAll();
+  const r = S.plan && S.plan.routes[selCrewId()]; if (r && r.stops.length) fitRoute(r); else { fit(BOUNDS, 40); draw(); }
+  toast(S.viewer ? "Now seeing only " + shortName(offById(S.viewer)) + "'s crew" : "Supervisor view: all crews");
+};
+$("pClose").onclick = closePhone; $("pX").onclick = closePhone;
+window.addEventListener("resize", () => { if (!$("phoneWrap").hidden) phFrame(); });
 
 /* ---------------- boot ---------------- */
 function setLoad(t, p, s) { $("loadT").textContent = t; $("loadP").style.width = Math.round(p * 100) + "%"; if (s) $("loadS").textContent = s; }

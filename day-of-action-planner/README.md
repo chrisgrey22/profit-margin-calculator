@@ -53,15 +53,32 @@ All the times on site can be changed on the day.
 4. **Allocation.** Each visit goes to the eligible crew and position that adds the least time, with a strong preference for a crew already visiting that address. Each route is then improved with 2-opt and relocate moves.
 5. **Supervisor control.** A supervisor can move any visit to a named crew, or re-pair officers, and the plan rebuilds immediately.
 
+## In the mock-up as well
+
+- **Signed in as (simulated).** A switch in the header shows the difference between a supervisor, who sees every crew, and an officer, who sees only their own crew's visits on the map and list.
+- **Phone sat nav.** "Open phone sat nav" on any crew opens the crew's phone screen. A simulated drive follows the real road route, giving turn-by-turn directions with distance to the next turn and time to arrival. Each stop shows:
+  - who the crew is going to see;
+  - warning markers;
+  - conditions (registration requirements, Sexual Harm Prevention Order, bail, licence, protection order);
+  - what to look out for;
+  - an on-scene checklist.
+
+  The crew then moves on to the next stop and finally back to base.
+- **Roster sync (simulated).** The header shows a sync from GRS (who is on duty) alongside Niche and ViSOR.
+
 ## For a production build
 
-- **Routing:** replace the in-browser graph with OSRM, GraphHopper or Valhalla hosted on the force network, or an approved commercial routing API.
-- **Base map:** use Ordnance Survey tiles under the Public Sector Geospatial Agreement.
-- **Data:** read-only feeds from ViSOR (offender visits, device checks), Niche RMS (bail, Clare's Law applications, protection orders) and the IOM cohort. All are geocoded to AddressBase UPRNs so the same address is matched across teams, with an audit log of every view.
-- **Security:** role-based access, so addresses are shown only to the allocated crew, and nothing is cached on the device.
-- **Rules to keep:** every visit has two officers, with no lone visits. The MOSOVO officer is always the named lead on registered sex offender visits, and specialist-only visits stay with two officers from the owning team.
+| Need | How |
+|---|---|
+| Who is working today | Read the day's duty roster from GRS or FIRMS: officer, team, station, shift times, skills and vehicles. Abstractions and sickness drop out automatically. |
+| What needs doing | Read-only feeds from ViSOR (offender visits, device checks), Niche RMS (bail, Clare's Law applications, protection orders) and the IOM cohort. Addresses are matched by AddressBase UPRN. |
+| Locked down | Force sign-in (Microsoft Entra ID) with roles. Supervisors see their area. Officers see only their own crew's visits, released at shift start and withdrawn at shift end. Every view and change is audited. DPIA, MoPI-compliant retention and force security accreditation are needed before go-live. |
+| Sat nav on the phone | An app on force-managed phones under mobile device management. It uses GPS for turn-by-turn directions, re-routes, and moves on to the next visit automatically. Nothing is stored on the device after the shift. |
+| Briefing at the door | Subject, PNC and Niche warning markers, current conditions, what to look out for, and an on-scene checklist. Results are written back to ViSOR or Niche. |
+| Live view for supervisors | Each crew's position and progress, so visits can be moved if a crew is pulled to an incident. |
+| Routing and mapping | A routing engine (OSRM, GraphHopper or Valhalla) hosted on the force network, with Ordnance Survey mapping under the Public Sector Geospatial Agreement. |
 
-The "Developer notes" button inside the app has the suggested data contract.
+**Rules to keep:** every visit has two officers, with no lone visits. The officer from the owning team leads, and specialist-only offender visits stay with two MOSOVO officers.
 
 ## Rebuilding the data
 
