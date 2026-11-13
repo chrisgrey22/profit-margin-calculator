@@ -76,6 +76,10 @@ button{cursor:pointer}
 .ic.rso{border-radius:50%;background:var(--rso)}
 .ic.bail{border-radius:2px;background:var(--bail)}
 .ic.dvds{background:var(--dvds);transform:rotate(45deg) scale(.86);border-radius:2px}
+.ic.device{background:#1d5fa8;clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%)}
+.ic.dvpo{background:#b0177f;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.ic.iom{background:#8a6a00;clip-path:polygon(0 0,100% 0,50% 100%)}
+.ic.joint{border:2px dashed #0c2647;border-radius:50%;width:20px;height:14px}
 .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .kpi{background:var(--soft);border-radius:9px;padding:8px 10px;display:flex;flex-direction:column}
 .kpi b{font-size:22px;font-variant-numeric:tabular-nums;line-height:1.15}
@@ -94,7 +98,7 @@ canvas#map.drag{cursor:grabbing}
 .mapctl button.txt{font-size:12px;font-weight:700}
 .areas{position:absolute;top:12px;left:12px;display:flex;flex-wrap:wrap;gap:6px;max-width:calc(100% - 90px)}
 .areas button{min-height:40px;padding:0 12px;border-radius:9px;border:1px solid #9fb0c8;background:rgba(255,255,255,.95);font-size:14px;font-weight:600;box-shadow:0 1px 3px rgba(12,38,71,.15)}
-.legend{position:absolute;left:12px;bottom:12px;background:rgba(255,255,255,.96);border:1px solid #b7c4d6;border-radius:10px;padding:10px 12px;font-size:13px;display:grid;grid-template-columns:auto 1fr;gap:5px 10px;align-items:center;box-shadow:0 1px 4px rgba(12,38,71,.15);max-width:min(330px,calc(100% - 24px))}
+.legend{position:absolute;left:12px;bottom:12px;background:rgba(255,255,255,.96);border:1px solid #b7c4d6;border-radius:10px;padding:8px 12px;font-size:12.5px;display:grid;grid-template-columns:auto 1fr auto 1fr;gap:4px 8px;align-items:center;box-shadow:0 1px 4px rgba(12,38,71,.15);max-width:min(560px,calc(100% - 140px))}
 .legend .stn{width:16px;height:16px;border-radius:4px;background:var(--navy);border:2px solid #fff;box-shadow:0 0 0 1px var(--navy)}
 .legend .rt{width:22px;height:5px;border-radius:3px;background:#0f62fe}
 .legend .bd{width:22px;height:0;border-top:2px dashed #3a5480}
@@ -137,6 +141,10 @@ canvas#map.drag{cursor:grabbing}
 .dirs{margin:4px 0 2px;padding:10px 12px 10px 32px;background:var(--soft);border-radius:9px;font-size:14px;display:flex;flex-direction:column;gap:5px}
 .dirs li span{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 .empty{padding:24px 18px;color:var(--muted)}
+.also{background:#eef6f1;border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:3px}
+.onsite{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.onsite .field label{font-size:12.5px}
+.chips .chip{font-size:13.5px;text-align:left}
 .solo{border:2px dashed #d97a7f;background:var(--badbg);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
 .solo .btn{align-self:flex-start}
 .solo .field,.sheethead .field{flex:none}
@@ -185,24 +193,24 @@ canvas#map.drag{cursor:grabbing}
     <header class="bar">
       <div class="brand">
         <small id="forceLine">__FORCELINE__</small>
-        <h1>Day of Action Visit Planner<span class="cy" lang="cy">Cynllunydd Ymweliadau</span></h1>
+        <h1>Joint Visit Planner<span class="cy" lang="cy">Cynllunydd Ymweliadau ar y Cyd</span></h1>
       </div>
       <div class="sync" id="sync" role="status">
         <span class="dot" aria-hidden="true"></span>
-        <span id="syncText"><b>Niche RMS</b> · synced 07:42 · <span id="recCount">72</span> records (simulated)</span>
+        <span id="syncText"><b>Niche + ViSOR</b> · synced 07:42 · <span id="recCount">113</span> records from 5 teams (simulated)</span>
         <button class="btn dark small" id="resync" type="button">Re-sync</button>
       </div>
       <button class="btn dark" id="devBtn" type="button">Developer notes</button>
     </header>
     <div class="chequer" aria-hidden="true"></div>
-    <div class="mock"><b>Mock-up.</b> Every person, visit and address is fictional and none of it comes from Niche. The roads, stations and boundaries are real (OpenStreetMap via Overture Maps). Visit pins sit on real streets but are not real addresses.</div>
+    <div class="mock"><b>Mock-up.</b> Every person, visit and address is fictional and none of it comes from Niche or ViSOR. The roads, stations and boundaries are real (OpenStreetMap via Overture Maps). Visit pins sit on real streets but are not real addresses.</div>
   </div>
 
   <div class="main">
     <aside class="rail" aria-label="Plan the day">
       <div class="scroll">
         <section class="sec">
-          <h2>Friday 20 November 2026</h2>
+          <h2>Friday 20 November 2026 · all teams</h2>
           <div class="kpis" id="kpis"></div>
         </section>
         <section class="sec" aria-labelledby="offH">
@@ -215,9 +223,10 @@ canvas#map.drag{cursor:grabbing}
             <div class="row">
               <div class="field"><label for="fBase">Starts from</label><select id="fBase"></select></div>
               <div class="field"><label for="fTeam">Team</label><select id="fTeam">
-                <option value="MOSOVO">Sexual and Violent Offenders</option>
+                <option value="MOSOVO">Sexual and Violent Offenders (MOSOVO)</option>
                 <option value="DAU">Domestic Abuse Unit</option>
                 <option value="POLIT">Online Investigation Team</option>
+                <option value="IOM">Integrated Offender Management</option>
                 <option value="NPT">BCU neighbourhood or response</option></select></div>
             </div>
             <div class="row">
@@ -226,22 +235,26 @@ canvas#map.drag{cursor:grabbing}
             </div>
             <p class="note" id="formMsg" role="alert" hidden></p>
             <button class="btn hv" type="submit">Add officer</button>
-            <p class="note">New officers are paired automatically: a MOSOVO or Domestic Abuse Unit officer with a BCU officer from the same station. Change any pairing from the crew's run sheet.</p>
+            <p class="note">New officers are paired automatically with someone free at the same station, a specialist with a BCU officer first. Change any pairing from the crew's run sheet.</p>
           </form>
         </section>
         <section class="sec" aria-labelledby="typH">
-          <h2 id="typH">Visit types to plan</h2>
+          <h2 id="typH">Each team's demand</h2>
           <div class="chips" id="typeChips"></div>
-          <div class="row">
-            <div class="field"><label for="mRso">Offender visit on site</label><select id="mRso" data-t="rso"><option value="45">45 min</option><option value="60" selected>1 hour</option><option value="75">1h 15m</option><option value="90">1h 30m</option></select></div>
-            <div class="field"><label for="mBail">Bail check on site</label><select id="mBail" data-t="bail"><option value="5">5 min</option><option value="10" selected>10 min</option><option value="15">15 min</option><option value="20">20 min</option></select></div>
-            <div class="field"><label for="mDvds">Disclosure on site</label><select id="mDvds" data-t="dvds"><option value="20">20 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">1 hour</option></select></div>
+          <h2>Average time on site, from arrival</h2>
+          <div class="onsite">
+            <div class="field"><label for="mRso">Offender visit</label><select id="mRso" data-t="rso"><option value="45">45 min</option><option value="60" selected>1 hour</option><option value="75">1h 15m</option><option value="90">1h 30m</option></select></div>
+            <div class="field"><label for="mDev">Device check</label><select id="mDev" data-t="device"><option value="30">30 min</option><option value="45" selected>45 min</option><option value="60">1 hour</option></select></div>
+            <div class="field"><label for="mDvds">Disclosure</label><select id="mDvds" data-t="dvds"><option value="20">20 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">1 hour</option></select></div>
+            <div class="field"><label for="mDvpo">Protection order</label><select id="mDvpo" data-t="dvpo"><option value="10">10 min</option><option value="20" selected>20 min</option><option value="30">30 min</option></select></div>
+            <div class="field"><label for="mIom">IOM visit</label><select id="mIom" data-t="iom"><option value="20">20 min</option><option value="30" selected>30 min</option><option value="45">45 min</option></select></div>
+            <div class="field"><label for="mBail">Bail check</label><select id="mBail" data-t="bail"><option value="5">5 min</option><option value="10" selected>10 min</option><option value="15">15 min</option><option value="20">20 min</option></select></div>
           </div>
           <div class="row">
             <div class="field"><label for="sAdmin">Write-up time at end</label><select id="sAdmin"><option value="0">None</option><option value="30" selected>30 minutes</option><option value="45">45 minutes</option><option value="60">1 hour</option></select></div>
             <div class="field"><label for="sReach">Furthest visit from base</label><select id="sReach"><option value="20">20 min drive</option><option value="30">30 min drive</option><option value="40" selected>40 min drive</option><option value="60">1 hour drive</option></select></div>
           </div>
-          <p class="note"><b>Rules the planner follows.</b> Every visit is done by two officers. Nobody is sent out alone. On every registered sex offender visit, one of the two is a MOSOVO officer and leads. Specialist-only visits need two MOSOVO officers. A Domestic Abuse Unit officer leads every Clare's Law disclosure. Bail checks are picked up along the crew's route, led by the BCU officer. Overdue and higher-risk visits go first, and times the applicant can safely be seen are kept.</p>
+          <p class="note"><b>Rules the planner follows.</b> Every visit is done by two officers, and nobody is sent out alone. The officer from the team that owns a visit always leads it: MOSOVO for offender visits (specialist-only visits need two MOSOVO officers), the Online Investigation Team for device checks, the Domestic Abuse Unit for disclosures and protection order checks, and Integrated Offender Management for IOM visits. Bail checks are picked up along any crew's route, led by the BCU officer. When several teams need the same address, the planner tries to send one crew that can do all of it. Overdue and higher-risk visits go first, and times an applicant can safely be seen are kept.</p>
         </section>
         <section class="sec" aria-labelledby="unH">
           <h2 id="unH">Not allocated</h2>
@@ -259,11 +272,15 @@ canvas#map.drag{cursor:grabbing}
         <button type="button" id="zall" class="txt" aria-label="Show whole force area">ALL</button>
       </div>
       <div class="legend" aria-label="Map key">
-        <span class="ic rso" aria-hidden="true"></span><span>Registered sex offender visit</span>
-        <span class="ic bail" aria-hidden="true"></span><span>Bail address check</span>
-        <span class="ic dvds" aria-hidden="true"></span><span>Clare's Law disclosure</span>
+        <span class="ic rso" aria-hidden="true"></span><span>Offender visit · MOSOVO</span>
+        <span class="ic device" aria-hidden="true"></span><span>Device check · Online Investigation</span>
+        <span class="ic dvds" aria-hidden="true"></span><span>Clare's Law · Domestic Abuse Unit</span>
+        <span class="ic dvpo" aria-hidden="true"></span><span>Protection order · Domestic Abuse Unit</span>
+        <span class="ic iom" aria-hidden="true"></span><span>IOM visit · Offender Management</span>
+        <span class="ic bail" aria-hidden="true"></span><span>Bail check · BCU</span>
+        <span class="ic joint" aria-hidden="true"></span><span>Same address, two teams</span>
         <span class="stn" aria-hidden="true"></span><span>Police station staff work from</span>
-        <span class="rt" id="lgRoute" aria-hidden="true"></span><span>Selected officer's route</span>
+        <span class="rt" id="lgRoute" aria-hidden="true"></span><span>Selected crew's route</span>
         <span class="bd" aria-hidden="true"></span><span>Local authority boundary</span>
         <span class="rd" aria-hidden="true"><i style="background:#5f86d6"></i><i style="background:#6fb27f"></i><i style="background:#e98f86"></i></span><span>Motorway, trunk road, A road</span>
       </div>
@@ -281,14 +298,17 @@ canvas#map.drag{cursor:grabbing}
 <div class="modal" id="dev" hidden>
   <div role="dialog" aria-modal="true" aria-labelledby="devH">
     <div class="row" style="justify-content:space-between"><h2 id="devH">Developer notes</h2><button class="btn" id="devClose" type="button">Close</button></div>
-    <p>This page is a working mock-up of a visit planner for Day of Action deployments. Routing, allocation and directions run fully in the browser against a real road network. Only the case data is invented. Use this page as the brief for a production build.</p>
+    <h3>The problem</h3>
+    <p>Several teams in the Strategic Public Protection Command visit offenders' home addresses, and each one plans its own visits. MOSOVO visits registered sex offenders. The Online Investigation Team checks devices under Sexual Harm Prevention Orders. The Domestic Abuse Unit gives Clare's Law disclosures and checks protection orders. Integrated Offender Management visits its cohort. BCU officers check bail addresses. Planning in silos sends separate crews down the same streets, sometimes to the same front door, on the same day.</p>
+    <p>This tool brings all of that demand into one plan. It pairs officers from different teams into crews of two and routes each crew so they work together. The specialist always leads their own team's visit, and one trip covers every team that needs the same address.</p>
+    <p>This page is a working mock-up. Routing, allocation and directions run fully in the browser against a real road network. Only the case data is invented. Use this page as the brief for a production build.</p>
     <h3>What is real and what is mocked</h3>
     <table>
       <tr><th>Part</th><th>In this mock-up</th><th>In production</th></tr>
       <tr><td>Road network</td><td>OpenStreetMap roads via Overture Maps (release 2026-10-21), 72,000 junctions and 85,000 links, with one-way streets. Built into the page.</td><td>A routing engine (OSRM, GraphHopper or Valhalla) hosted inside the force network, or a commercial service approved by the force.</td></tr>
       <tr><td>Base map</td><td>Coastline, rivers, woodland, local authority boundaries and place names, drawn on a canvas.</td><td>Ordnance Survey basemap tiles under the Public Sector Geospatial Agreement.</td></tr>
       <tr><td>Police stations</td><td>Real stations from Overture Maps places. Cockett and Treharris are placed by hand and are approximate.</td><td>Force estates register.</td></tr>
-      <tr><td>Visits</td><td>72 invented records with mock references. Pins are snapped to real residential streets but are not real addresses.</td><td>Read-only feeds: Niche RMS (bail, Domestic Violence Disclosure Scheme applications) and ViSOR (registered offender visit schedules), geocoded with AddressBase UPRNs.</td></tr>
+      <tr><td>Visits</td><td>113 invented records across six visit types and five teams. 13 addresses are wanted by more than one team. Pins are snapped to real residential streets but are not real addresses.</td><td>Read-only feeds: ViSOR (offender visits, device checks), Niche RMS (bail, Clare's Law applications, protection orders) and the IOM cohort list. All are geocoded to AddressBase UPRNs so the same address is matched across teams.</td></tr>
       <tr><td>"Niche sync"</td><td>Animation only. Nothing is fetched.</td><td>Scheduled extract or API, with an audit log of who viewed which record.</td></tr>
     </table>
     <h3>How the planner works</h3>
@@ -310,7 +330,7 @@ canvas#map.drag{cursor:grabbing}
       <li>Store as little as possible on devices. Show addresses only to the allocated crew, and log every view.</li>
     </ul>
     <h3>Suggested data contract</h3>
-    <p><code>Visit { id, type: rso|bail|dvds, ownerTeam, uprn, lat, lon, area, risk, overdue, specialistOnly, durationMins, window?: [start,end], flags[], sourceRef }</code></p>
+    <p><code>Visit { id, type: rso|device|dvds|dvpo|iom|bail, ownerTeam, uprn, lat, lon, area, risk, overdue, specialistOnly, durationMins, window?: [start,end], flags[], sourceRef }</code></p>
     <p><code>Officer { id, name, collar, team, baseStationId, shiftStart, shiftEnd }</code></p>
     <p><code>Crew { id, leadOfficerId, partnerOfficerId, baseStationId, start, end }</code> (always exactly two officers)</p>
     <p><code>Plan { crewId, stops: [{ visitId, leadOfficerId, eta, depart, legSeconds, legMetres, steps[] }], finish, unallocated: [{ visitId, reason }] }</code></p>
@@ -326,19 +346,27 @@ const BASE = JSON.parse(document.getElementById("basedata").textContent);
 const $ = (id) => document.getElementById(id);
 const LON0 = -3.62, LAT0 = 51.6, KX = 111320 * Math.cos(LAT0 * Math.PI / 180), KY = 110574;
 const PX = (lon) => (lon - LON0) * KX, PY = (lat) => (LAT0 - lat) * KY;
+// Each team's home-address demand. "need" is the team one crew member must come from; that officer leads.
 const TYPES = {
-  rso: { label: "Registered sex offender visit", short: "Offender visit", color: "#5b2ca6", lead: ["MOSOVO"] },
-  bail: { label: "Bail address check", short: "Bail check", color: "#d24a0e", lead: ["MOSOVO", "DAU", "POLIT", "NPT"] },
-  dvds: { label: "Clare's Law disclosure", short: "Clare's Law disclosure", color: "#0b7c75", lead: ["DAU"] }
+  rso: { label: "Registered sex offender visit", short: "Offender visit", color: "#5b2ca6", need: "MOSOVO", shape: "circle" },
+  device: { label: "Device check (Sexual Harm Prevention Order)", short: "Device check", color: "#1d5fa8", need: "POLIT", shape: "hex" },
+  dvds: { label: "Clare's Law disclosure", short: "Clare's Law disclosure", color: "#0b7c75", need: "DAU", shape: "diamond" },
+  dvpo: { label: "Protection order compliance check", short: "Protection order check", color: "#b0177f", need: "DAU", shape: "tri" },
+  iom: { label: "Integrated Offender Management visit", short: "IOM visit", color: "#8a6a00", need: "IOM", shape: "tridown" },
+  bail: { label: "Bail address check", short: "Bail check", color: "#d24a0e", need: null, shape: "square" }
 };
-const TEAMS = { MOSOVO: "Sexual and Violent Offenders", DAU: "Domestic Abuse Unit", POLIT: "Online Investigation Team", NPT: "BCU neighbourhood or response" };
+const TEAMS = { MOSOVO: "Sexual and Violent Offenders (MOSOVO)", DAU: "Domestic Abuse Unit", POLIT: "Online Investigation Team", IOM: "Integrated Offender Management", NPT: "BCU neighbourhood or response" };
 const HUBS = { W: "Western", N: "Central North", S: "Central South", E: "Eastern" };
 const OFFCOL = ["#0f62fe", "#da1e28", "#198038", "#8a3ffc", "#e86a00", "#007d79", "#d12771", "#1d3a8a", "#9a6b00", "#4b5563", "#0072c3", "#a2191f"];
 const SPEED = [100, 80, 56, 48, 42, 35, 28, 15].map((k) => k / 3.6);
 const STATIONS = APP.stations, VISITS = APP.visits, NAMES = APP.names;
 const stById = {}; STATIONS.forEach((s, i) => { s.idx = i; stById[s.id] = s; s.X = PX(s.lon); s.Y = PY(s.lat); });
-const ONSITE = { rso: 60, bail: 10, dvds: 30 }; // average minutes on site, from arrival
+const ONSITE = { rso: 60, bail: 10, dvds: 30, dvpo: 20, device: 45, iom: 30 }; // average minutes on site, from arrival
 VISITS.forEach((v, i) => { v.idx = i; v.X = PX(v.lon); v.Y = PY(v.lat); v.mins = ONSITE[v.type]; });
+// the same address wanted by more than one team
+const AT = {}; VISITS.forEach((v) => { (AT[v.node] = AT[v.node] || []).push(v); });
+VISITS.forEach((v) => { v.others = AT[v.node].filter((x) => x !== v); v.slot = AT[v.node].indexOf(v); });
+const SHARED = Object.values(AT).filter((a) => a.length > 1);
 
 /* ---------------- graph decode ---------------- */
 let G = null;
@@ -422,28 +450,35 @@ function arcFrom(ar) { const e = G.aedge[ar]; return G.afwd[ar] ? G.eu[e] : G.ev
 const EX = "(example)";
 const D = (name, base, team) => ({ name: name + " " + EX, base, team, start: "09:15", end: "16:00" });
 const DEFAULT_OFFICERS = [
-  D("DC 4512 Rhian Hughes", "CKT", "MOSOVO"), D("PC 1043 Huw Bevan", "CKT", "NPT"),
-  D("PC 3381 Owain Jenkins", "CKT", "DAU"), D("PC 2276 Lowri Parry", "CKT", "NPT"),
+  D("DC 4512 Rhian Hughes", "CKT", "MOSOVO"), D("PC 6402 Elin Vaughan", "CKT", "POLIT"),
+  D("PC 3381 Owain Jenkins", "CKT", "DAU"), D("PC 1043 Huw Bevan", "CKT", "NPT"),
   D("DC 2907 Sian Price", "SWC", "MOSOVO"), D("PC 5518 Jac Phillips", "SWC", "NPT"),
+  D("PC 7120 Gethin Morris", "SWC", "IOM"), D("PC 2276 Lowri Parry", "SWC", "NPT"),
   D("DC 5120 Gareth Lewis", "TRH", "MOSOVO"), D("PC 6120 Bethan Rowlands", "TRH", "NPT"),
-  D("PC 6644 Ffion Rees", "TRH", "DAU"), D("PC 4471 Iwan Griffiths", "TRH", "NPT"),
+  D("PC 6644 Ffion Rees", "TRH", "DAU"), D("PC 4471 Iwan Griffiths", "TRH", "IOM"),
   D("DC 1876 Mark Evans", "BGD", "MOSOVO"), D("PC 7310 Cerys Thomas", "BGD", "POLIT"),
+  D("PC 5830 Rhys Daniel", "BGD", "IOM"), D("PC 3127 Anwen Harris", "BGD", "NPT"),
   D("DC 3555 Dylan Morgan", "CFC", "MOSOVO"), D("DC 4098 Nia Williams", "CFC", "MOSOVO"),
-  D("PC 3902 Megan Hopkins", "CFC", "NPT"), D("PC 8125 Rhodri Watkins", "CFC", "NPT"),
-  D("DC 6210 Emyr Pritchard", "CFC", "MOSOVO"), D("PC 7781 Seren Bowen", "CFC", "NPT"),
-  D("PC 2219 Tom Davies", "CFB", "DAU"), D("PC 9034 Carys Lloyd", "CFB", "NPT")
+  D("DC 6210 Emyr Pritchard", "CFC", "MOSOVO"), D("PC 3902 Megan Hopkins", "CFC", "NPT"),
+  D("PC 8125 Rhodri Watkins", "CFC", "IOM"), D("PC 7781 Seren Bowen", "CFC", "NPT"),
+  D("PC 2219 Tom Davies", "CFB", "DAU"), D("PC 9034 Carys Lloyd", "CFB", "NPT"),
+  D("PC 8802 Alys Powell", "CFB", "DAU"), D("PC 4417 Kieran Shaw", "CFB", "POLIT")
 ];
-const DEFAULT_PAIRS = [["DC 3555 Dylan Morgan", "DC 4098 Nia Williams"]];
+const DEFAULT_PAIRS = [["DC 4512 Rhian Hughes", "PC 6402 Elin Vaughan"], ["PC 3381 Owain Jenkins", "PC 1043 Huw Bevan"], ["DC 2907 Sian Price", "PC 5518 Jac Phillips"],
+  ["PC 7120 Gethin Morris", "PC 2276 Lowri Parry"], ["DC 5120 Gareth Lewis", "PC 6120 Bethan Rowlands"], ["PC 6644 Ffion Rees", "PC 4471 Iwan Griffiths"],
+  ["DC 1876 Mark Evans", "PC 7310 Cerys Thomas"], ["PC 5830 Rhys Daniel", "PC 3127 Anwen Harris"], ["DC 3555 Dylan Morgan", "DC 4098 Nia Williams"],
+  ["DC 6210 Emyr Pritchard", "PC 3902 Megan Hopkins"], ["PC 8125 Rhodri Watkins", "PC 7781 Seren Bowen"], ["PC 2219 Tom Davies", "PC 9034 Carys Lloyd"],
+  ["PC 8802 Alys Powell", "PC 4417 Kieran Shaw"]];
 let uid = 1;
 const S = {
-  officers: [], pairs: {}, crews: [], solo: [], sel: null, types: { rso: true, bail: true, dvds: true }, admin: 30, reach: 40,
+  officers: [], pairs: {}, crews: [], solo: [], sel: null, types: Object.fromEntries(Object.keys(TYPES).map((t) => [t, true])), admin: 30, reach: 40,
   pins: {}, plan: null, ready: false
 };
 function loadSaved() {
-  try { const raw = localStorage.getItem("doa-planner-v2"); if (raw) { const o = JSON.parse(raw); if (Array.isArray(o.officers) && o.officers.length) return o; } } catch (e) {}
+  try { const raw = localStorage.getItem("doa-planner-v3"); if (raw) { const o = JSON.parse(raw); if (Array.isArray(o.officers) && o.officers.length) return o; } } catch (e) {}
   return null;
 }
-function save() { try { localStorage.setItem("doa-planner-v2", JSON.stringify({ officers: S.officers.map(({ id, name, base, team, start, end }) => ({ id, name, base, team, start, end })), pairs: S.pairs })); } catch (e) {} }
+function save() { try { localStorage.setItem("doa-planner-v3", JSON.stringify({ officers: S.officers.map(({ id, name, base, team, start, end }) => ({ id, name, base, team, start, end })), pairs: S.pairs })); } catch (e) {} }
 function initOfficers() {
   const sv = loadSaved();
   if (sv) {
@@ -461,8 +496,8 @@ function setPair(a, b) {
   [a, b].forEach((x) => { if (!x) return; const old = S.pairs[x]; if (old) delete S.pairs[old]; delete S.pairs[x]; });
   if (a && b && a !== b) { S.pairs[a] = b; S.pairs[b] = a; }
 }
-const RANK = { MOSOVO: 0, DAU: 1, POLIT: 2, NPT: 3 };
-const isSpec = (o) => o.team === "MOSOVO" || o.team === "DAU";
+const RANK = { MOSOVO: 0, DAU: 1, POLIT: 2, IOM: 3, NPT: 4 };
+const isSpec = (o) => o.team !== "NPT";
 // Every crew is exactly two officers. Supervisor pairings win; otherwise each specialist
 // (MOSOVO or Domestic Abuse Unit) is paired with a BCU officer from the same station first.
 function buildCrews() {
@@ -485,10 +520,10 @@ function buildCrews() {
 const crewOf = (oid) => S.crews.find((c) => c.lead.id === oid || c.mate.id === oid);
 const selCrewId = () => { const c = crewOf(S.sel); return c ? c.id : null; };
 const has = (c, t) => c.lead.team === t || c.mate.team === t;
-function leadFor(c, v) { // [lead, with]
-  if (v.type === "rso") return c.lead.team === "MOSOVO" ? [c.lead, c.mate] : [c.mate, c.lead];
-  if (v.type === "dvds") return c.lead.team === "DAU" ? [c.lead, c.mate] : [c.mate, c.lead];
-  return RANK[c.mate.team] >= 2 ? [c.mate, c.lead] : [c.lead, c.mate]; // bail: the BCU officer leads
+function leadFor(c, v) { // [lead, with]: the officer from the team that owns the visit leads
+  const need = TYPES[v.type].need;
+  if (need) return c.lead.team === need ? [c.lead, c.mate] : [c.mate, c.lead];
+  return c.mate.team === "NPT" ? [c.mate, c.lead] : [c.lead, c.mate]; // bail: the BCU officer leads
 }
 const tmin = (s) => { const [h, m] = s.split(":").map(Number); return h * 60 + m; };
 const fmt = (sec) => { const m = Math.round(sec / 60); const h = Math.floor(m / 60) % 24, r = m % 60; return String(h).padStart(2, "0") + ":" + String(r).padStart(2, "0"); };
@@ -500,6 +535,8 @@ function prio(v) {
   let p = 0; if (v.overdue) p += 100;
   p += { "Very high": 60, High: 40, Medium: 20, Low: 10, "": 0 }[v.risk || ""] || 0;
   if (v.spec) p += 15; if (v.window) p += 25; if (v.type === "rso") p += 8; if (v.type === "dvds") p += 5;
+  if (v.type === "device") p += 45; // scarce specialist time: plan the device checks first
+  if (v.others.length) p += 30; // shared addresses early, so the whole address goes to one crew
   return p;
 }
 function evalRoute(o, stops) {
@@ -514,9 +551,9 @@ function evalRoute(o, stops) {
   return { finish: t, drive, arr, back, ok: t <= (tmin(o.end) - S.admin) * 60 };
 }
 function eligible(c, v) {
-  if (v.type === "rso" && !has(c, "MOSOVO")) return false;
+  const need = TYPES[v.type].need;
+  if (need && !has(c, need)) return false;
   if (v.type === "rso" && v.spec && !(c.lead.team === "MOSOVO" && c.mate.team === "MOSOVO")) return false;
-  if (v.type === "dvds" && !has(c, "DAU")) return false;
   return true;
 }
 function canDo(c, v) { return eligible(c, v) && MT[pIdxStation(stById[c.base]) * NP + pIdxVisit(v)] <= S.reach * 60; }
@@ -533,7 +570,8 @@ function plan() {
       for (let k = 0; k <= r.length; k++) {
         const nr = r.slice(0, k).concat([v.idx], r.slice(k)); const ev = evalRoute(o, nr);
         if (!ev || (!ev.ok && !only)) continue;
-        const cost = ev.finish - base + 420 * r.length; // spread work across crews
+        let cost = ev.finish - base + 420 * r.length; // spread work across crews
+        if (v.others.some((x) => r.includes(x.idx))) cost -= 1800; // same address already on this route: one knock, several teams
         if (!best || cost < best.cost) best = { o, nr, cost };
       }
     }
@@ -550,7 +588,7 @@ function plan() {
   const unal = still.map((v) => {
     const elig = offs.filter((c) => eligible(c, v));
     let reason;
-    if (!elig.length) reason = v.type === "rso" ? (v.spec ? "Specialist-only: needs a crew of two MOSOVO officers" : "No crew has a MOSOVO officer") : v.type === "dvds" ? "No crew has a Domestic Abuse Unit officer" : "No crews of two on duty";
+    if (!elig.length) reason = v.type === "rso" && v.spec ? "Specialist-only: needs a crew of two MOSOVO officers" : TYPES[v.type].need ? "No crew on duty includes " + TEAMS[TYPES[v.type].need] : "No crews of two on duty";
     else if (!elig.some((c) => canDo(c, v))) reason = (v.spec ? "Specialist-only: no crew of two MOSOVO officers" : "No suitable crew") + " within " + S.reach + " minutes' drive";
     else reason = v.window ? "No crew has room during the safe time window" : "No time left in a suitable crew's shift";
     return { v, reason };
@@ -748,21 +786,30 @@ function drawRoute(r, sel) {
   } else { path(); c.strokeStyle = r.o.color; c.globalAlpha = .38; c.lineWidth = 3.5; c.stroke(); }
   c.restore();
 }
+function shapePath(sh, x, y, r) {
+  const c = ctx;
+  if (sh === "circle") return c.arc(x, y, r, 0, Math.PI * 2);
+  if (sh === "square") return c.rect(x - r * .9, y - r * .9, r * 1.8, r * 1.8);
+  const poly = (n, rot, k) => { for (let i = 0; i < n; i++) { const a = rot + i * 2 * Math.PI / n; const px = x + Math.cos(a) * r * k, py = y + Math.sin(a) * r * k; i ? c.lineTo(px, py) : c.moveTo(px, py); } c.closePath(); };
+  if (sh === "diamond") return poly(4, -Math.PI / 2, 1.2);
+  if (sh === "hex") return poly(6, 0, 1.12);
+  if (sh === "tri") return poly(3, -Math.PI / 2, 1.35);
+  return poly(3, Math.PI / 2, 1.35);
+}
 function drawPin(v, a) {
-  const c = ctx; const x = sx(v.X), y = sy(v.Y); if (x < -30 || y < -30 || x > V.w + 30 || y > V.h + 30) return;
+  const c = ctx; const n0 = v.others.length + 1; const x = sx(v.X) + (n0 > 1 ? (v.slot - (n0 - 1) / 2) * 20 : 0), y = sy(v.Y); if (x < -30 || y < -30 || x > V.w + 30 || y > V.h + 30) return;
   const inactive = !S.types[v.type]; const mine = a && a.oid === selCrewId(); const other = a && !mine;
   const r = mine ? 11 : 8.5; c.save(); c.globalAlpha = inactive ? .3 : other ? .7 : 1;
   c.fillStyle = TYPES[v.type].color; c.strokeStyle = "#fff"; c.lineWidth = 2.5;
   c.beginPath();
-  if (v.type === "rso") c.arc(x, y, r, 0, Math.PI * 2);
-  else if (v.type === "bail") c.rect(x - r * .9, y - r * .9, r * 1.8, r * 1.8);
-  else { c.moveTo(x, y - r * 1.15); c.lineTo(x + r * 1.15, y); c.lineTo(x, y + r * 1.15); c.lineTo(x - r * 1.15, y); c.closePath(); }
+  shapePath(TYPES[v.type].shape, x, y, r);
   c.fill(); c.stroke();
   if (v.overdue && !inactive) { c.beginPath(); c.arc(x, y, r + 5, 0, Math.PI * 2); c.strokeStyle = "#a3141c"; c.lineWidth = 2; c.setLineDash([3, 3]); c.stroke(); c.setLineDash([]); }
   if (mine) {
     c.fillStyle = a.color; c.beginPath(); c.arc(x + 12, y - 12, 10, 0, Math.PI * 2); c.fill(); c.strokeStyle = "#fff"; c.lineWidth = 2; c.stroke();
     c.fillStyle = "#fff"; c.font = "700 12px " + getComputedStyle(document.body).fontFamily; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(String(a.n), x + 12, y - 11.5);
   } else if (!a && !inactive) { c.fillStyle = "#fff"; c.beginPath(); c.arc(x, y, 2.6, 0, Math.PI * 2); c.fill(); }
+  if (n0 > 1 && v.slot === 0 && !inactive) { c.globalAlpha = 1; c.strokeStyle = "#0c2647"; c.lineWidth = 1.5; c.setLineDash([2, 2]); c.beginPath(); c.ellipse(sx(v.X), y, (n0 - 1) * 10 + 17, 17, 0, 0, Math.PI * 2); c.stroke(); c.setLineDash([]); }
   c.restore(); hits.push({ x, y, r: r + 6, v });
 }
 function drawStation(s) {
@@ -837,6 +884,11 @@ function openPop(v) {
   else add("Allocated", S.types[v.type] ? "Not allocated" : "Type switched off");
   p.appendChild(dl);
   const ul = el("ul"); v.flags.forEach((f) => ul.appendChild(el("li", {}, f))); p.appendChild(ul);
+  if (v.others.length) {
+    const box = el("div", { class: "also" }); box.appendChild(el("b", {}, "Also due at this address"));
+    v.others.forEach((x) => { const ax = assignMap()[x.id]; box.appendChild(el("div", {}, TYPES[x.type].short + " · " + TEAMS[TYPES[x.type].need || "NPT"] + (ax ? (ax.oid === (a && a.oid) ? " · same crew, one trip" : " · a different crew") : " · not allocated"))); });
+    p.appendChild(box);
+  }
   const elig = S.crews.filter((c) => eligible(c, v));
   const fld = el("div", { class: "field" }); const lid = "mv" + v.id; fld.appendChild(el("label", { for: lid }, "Give this visit to a crew"));
   const sel = el("select", { id: lid }); sel.appendChild(el("option", { value: "" }, "Let the planner decide"));
@@ -858,7 +910,10 @@ function renderKpis() {
   const alloc = S.plan ? Object.values(S.plan.routes).reduce((a, r) => a + r.stops.length, 0) : 0;
   const tot = VISITS.filter((v) => S.types[v.type]).length;
   const mi = S.plan ? Object.values(S.plan.routes).reduce((a, r) => a + (r.stops.length ? r.metres : 0), 0) / 1609.34 : 0;
-  [[cnt("rso"), "Offender visits"], [cnt("bail"), "Bail checks"], [cnt("dvds"), "Clare's Law"], [alloc + "/" + tot, "Allocated"], [S.crews.length, "Crews of two"], [Math.round(mi), "Miles planned"]].forEach(([a, b]) => { const d = el("div", { class: "kpi" }); d.appendChild(el("b", {}, String(a))); d.appendChild(el("span", {}, b)); k.appendChild(d); });
+  const asg = assignMap(); let joint = 0, saved = 0;
+  SHARED.forEach((g) => { const act = g.filter((v) => S.types[v.type]); if (act.length > 1 && act.every((v) => asg[v.id] && asg[v.id].oid === asg[act[0].id].oid)) { joint++; saved += act.length - 1; } });
+  const teams = new Set(VISITS.filter((v) => S.types[v.type]).map((v) => TYPES[v.type].need || "NPT")).size;
+  [[tot, "Visits due"], [teams, "Teams' demand"], [alloc + "/" + tot, "Allocated"], [S.crews.length, "Crews of two"], [joint + "/" + SHARED.length, "Joint addresses"], [Math.round(mi), "Miles planned"]].forEach(([a, b]) => { const d = el("div", { class: "kpi" }); d.appendChild(el("b", {}, String(a))); d.appendChild(el("span", {}, b)); k.appendChild(d); });
 }
 function pairSelect(o, label, exclude) {
   const f = el("div", { class: "field" }); const id = "pw" + o.id; f.appendChild(el("label", { for: id }, label));
@@ -922,7 +977,7 @@ function renderSheet() {
   [o.lead, o.mate].forEach((m) => {
     const row = el("div", { class: "member" });
     const t = el("span"); t.appendChild(el("b", {}, m.name)); t.appendChild(el("br"));
-    const does = m.team === "MOSOVO" ? "Leads the offender visits" : m.team === "DAU" ? "Leads the Clare's Law disclosures" : "Leads the bail checks and supports every visit";
+    const does = { MOSOVO: "Leads the offender visits", DAU: "Leads disclosures and protection order checks", POLIT: "Leads the device checks", IOM: "Leads the IOM visits", NPT: "Leads the bail checks and supports every visit" }[m.team];
     t.appendChild(el("span", { class: "note" }, TEAMS[m.team] + " · " + does)); row.appendChild(t);
     const rm = el("button", { class: "btn small", type: "button", "aria-label": "Remove " + m.name }, "Remove"); rm.onclick = () => removeOfficer(m.id); row.appendChild(rm);
     mem.appendChild(row);
@@ -952,6 +1007,8 @@ function renderSheet() {
     if (v.overdue) tt.appendChild(el("span", { class: "tag bad" }, "Overdue")); if (v.risk) tt.appendChild(el("span", { class: "tag " + (/high/i.test(v.risk) ? "bad" : "warn") }, v.risk)); if (v.spec) tt.appendChild(el("span", { class: "tag navy" }, "Two MOSOVO officers"));
     b.appendChild(tt);
     b.appendChild(el("div", { class: "pair" }, "Lead: " + shortName(ld) + " (" + TEAMS[ld.team] + ") · With: " + shortName(wt)));
+    if (k > 0 && VISITS[r.stops[k - 1]].node === v.node) b.appendChild(el("span", { class: "tag ok" }, "Same address as stop " + k + ": one trip, two teams"));
+    else if (v.others.length) { const ax = assignMap(); const elsewhere = v.others.filter((x) => !(ax[x.id] && ax[x.id].oid === o.id)); if (elsewhere.length) b.appendChild(el("span", { class: "tag warn" }, "Also due here: " + elsewhere.map((x) => TYPES[x.type].short.toLowerCase() + (x.spec ? " (specialist-only, needs two MOSOVO officers)" : " (another crew)")).join(", "))); }
     b.appendChild(el("div", { class: "sdet" }, v.ref + " · " + v.flags[0] + (a.wait > 59 ? " · wait " + dur(a.wait) + " for the safe time window" : "")));
     b.appendChild(legBlock(leg, k === 0 ? st.name + " police station" : "the visit address", "Arrive at stop " + (k + 1) + ": " + TYPES[v.type].short.toLowerCase() + " in " + v.area + ". The pin is a fictional location."));
     li.appendChild(b); ol.appendChild(li);
@@ -997,7 +1054,7 @@ Object.keys(TYPES).forEach((t) => {
   b.onclick = () => { S.types[t] = !S.types[t]; b.setAttribute("aria-pressed", String(S.types[t])); replan(); }; $("typeChips").appendChild(b);
 });
 $("sAdmin").onchange = (e) => { S.admin = +e.target.value; replan(); };
-["mRso", "mBail", "mDvds"].forEach((id) => { $(id).onchange = (e) => { const t = e.target.dataset.t; ONSITE[t] = +e.target.value; VISITS.forEach((v) => { if (v.type === t) v.mins = ONSITE[t]; }); replan(); toast("Time on site updated. Routes rebuilt"); }; });
+["mRso", "mDev", "mDvds", "mDvpo", "mIom", "mBail"].forEach((id) => { $(id).onchange = (e) => { const t = e.target.dataset.t; ONSITE[t] = +e.target.value; VISITS.forEach((v) => { if (v.type === t) v.mins = ONSITE[t]; }); replan(); toast("Time on site updated. Routes rebuilt"); }; });
 $("sReach").onchange = (e) => { S.reach = +e.target.value; replan(); };
 $("addForm").addEventListener("submit", (e) => {
   e.preventDefault(); const name = $("fName").value.trim(); const msg = $("formMsg");
@@ -1022,11 +1079,11 @@ $("dev").addEventListener("click", (e) => { if (e.target === $("dev")) $("dev").
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") { if (!$("dev").hidden) { $("dev").hidden = true; $("devBtn").focus(); } else closePop(); } });
 $("resync").onclick = () => {
   const s = $("sync"), t = $("syncText"); if (s.classList.contains("busy")) return; s.classList.add("busy");
-  const msgs = ["Querying ViSOR for visits due…", "Pulling bail conditions from Niche…", "Pulling Clare's Law applications…", "Matching addresses to the map…"];
+  const msgs = ["ViSOR: offender visits and device checks due…", "Niche: bail conditions…", "Niche: Clare's Law applications and protection orders…", "IOM cohort: visits due…", "Matching addresses across teams…"];
   let i = 0; t.textContent = msgs[0];
   const iv = setInterval(() => { i++; if (i < msgs.length) { t.textContent = msgs[i]; return; } clearInterval(iv); s.classList.remove("busy");
     const d = new Date(); const hh = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
-    t.textContent = ""; const b = el("b", {}, "Niche RMS"); t.appendChild(b); t.appendChild(document.createTextNode(" · synced " + hh + " · " + VISITS.length + " records (simulated)")); replan(); toast("Synced. Routes rebuilt"); }, 650);
+    t.textContent = ""; const b = el("b", {}, "Niche + ViSOR"); t.appendChild(b); t.appendChild(document.createTextNode(" · synced " + hh + " · " + VISITS.length + " records from 5 teams (simulated)")); replan(); toast("Synced. Routes rebuilt"); }, 650);
 };
 
 /* ---------------- boot ---------------- */
@@ -1035,7 +1092,7 @@ async function boot() {
   initOfficers();
   await new Promise((r) => setTimeout(r, 30));
   decodeGraph(); resize(); fit(BOUNDS, 40); draw();
-  setLoad("Working out road travel times", 0.05, "From 6 stations and " + VISITS.length + " visits over the real road network");
+  setLoad("Working out road travel times", 0.05, "From 6 stations and " + VISITS.length + " visits for 5 teams over the real road network");
   for (let i = 0; i < NP; i++) {
     const { dist, pred } = dijkstra(PTS[i]); PRED[i] = pred;
     for (let j = 0; j < NP; j++) MT[i * NP + j] = dist[PTS[j]];

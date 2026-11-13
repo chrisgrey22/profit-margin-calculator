@@ -68,36 +68,58 @@ def pick(area,hub):
         if all(dm(nodes[i],nodes[j])>250 for j in used):
             used.add(i);return i
     return None
+FLAGS_DVPO=["Order: not to enter the victim's address","Order: no contact with the victim, 28 days","Order served 6 days ago","Known to drink heavily in the afternoon","Lives with parent since the order was made"]
+FLAGS_DEV=["Sexual Harm Prevention Order: all devices must be declared","Monitoring software due for renewal","New phone seen on social media, not declared","Games console with internet access at the address","Shared Wi-Fi with a neighbour reported"]
+FLAGS_IOM=["Prolific acquisitive offender, released 3 weeks ago","Drug rehabilitation requirement: check engagement","Curfew tag fitted, check the equipment","Probation asked for a joint home visit","Housing at risk: rent arrears reported"]
+MORE={"W":(2,3,4),"N":(2,2,3),"S":(2,2,3),"E":(3,3,4)}
+def mkv(hub,t,area,i,initials=None):
+    v=dict(id="",type=t,hub=hub,area=area[0],la=area[3],node=i,lon=round(nodes[i][0],5),lat=round(nodes[i][1],5),
+           initials=initials or (rnd.choice(FIRST)+"."+rnd.choice(FIRST)+"."),overdue=False,spec=False,risk="")
+    seq.setdefault(t,8000);seq[t]+=rnd.randint(3,40)
+    if t=="rso":
+        v["ref"]=f"VISOR-MOCK-{seq[t]:05d}";v["risk"]=rnd.choices(["Low","Medium","High","Very high"],[3,5,3,1])[0]
+        v["overdue"]=rnd.random()<0.25;v["spec"]=v["risk"] in("High","Very high") and rnd.random()<0.7
+        v["lastVisit"]=f"{rnd.randint(1,28):02d}/{rnd.choice(['06','07','08','09'])}/2026"
+        v["flags"]=rnd.sample(FLAGS_RSO,2);v["team"]="Management of Sexual and Violent Offenders"
+        if rnd.random()<0.2: v["window"]=[540,780]
+    elif t=="bail":
+        v["ref"]=f"NICHE-MOCK-OCC-{seq[t]:06d}";v["flags"]=rnd.sample(FLAGS_BAIL,2);v["team"]="BCU case progression"
+        v["bailTo"]=f"{rnd.randint(1,28):02d}/{rnd.choice(['12','01'])}/202{rnd.choice(['6','7'])}"
+    elif t=="dvds":
+        v["ref"]=f"DVDS-MOCK-{seq[t]:05d}";v["overdue"]=rnd.random()<0.2;f=rnd.sample(FLAGS_DVDS,2);v["team"]="Domestic Abuse Unit"
+        if any("10:00 to 14:00" in x for x in f): v["window"]=[600,840]
+        v["route"]="Right to Know" if any("Right to Know" in x for x in f) else "Right to Ask"
+        v["flags"]=[x for x in f if not x.startswith("Right to")] or [f[0]];v["applied"]=f"{rnd.randint(1,28):02d}/10/2026"
+    elif t=="dvpo":
+        v["ref"]=f"NICHE-MOCK-DVPO-{seq[t]:05d}";v["flags"]=rnd.sample(FLAGS_DVPO,2);v["team"]="Domestic Abuse Unit";v["risk"]=rnd.choice(["Medium","High"])
+    elif t=="device":
+        v["ref"]=f"POLIT-MOCK-{seq[t]:05d}";v["flags"]=rnd.sample(FLAGS_DEV,2);v["team"]="Online Investigation Team";v["overdue"]=rnd.random()<0.3
+    elif t=="iom":
+        v["ref"]=f"IOM-MOCK-{seq[t]:05d}";v["flags"]=rnd.sample(FLAGS_IOM,2);v["team"]="Integrated Offender Management";v["risk"]=rnd.choice(["Medium","High"])
+    return v
 for hub,(a,b,c) in COUNTS.items():
-    types=["rso"]*a+["bail"]*b+["dvds"]*c
-    areas=AREAS[hub]
+    d,e,f=MORE[hub]
+    types=["rso"]*a+["bail"]*b+["dvds"]*c+["dvpo"]*d+["iom"]*f
+    areas=AREAS[hub];hv=[]
     for k,t in enumerate(types):
         area=areas[(k*7+3)%len(areas)] if k>=len(areas) else areas[k]
         i=pick(area,hub)
         if i is None: continue
-        seq[t]+=rnd.randint(3,40)
-        v=dict(id=f"{hub}{len([x for x in visits if x['hub']==hub])+1:02d}",type=t,hub=hub,area=area[0],la=area[3],node=i,
-               lon=round(nodes[i][0],5),lat=round(nodes[i][1],5),initials=rnd.choice(FIRST)+"."+rnd.choice(FIRST)+".")
-        if t=="rso":
-            v["ref"]=f"VISOR-MOCK-{seq[t]:05d}";v["risk"]=rnd.choices(["Low","Medium","High","Very high"],[3,5,3,1])[0]
-            v["mins"]=60
-            v["overdue"]=rnd.random()<0.25;v["spec"]=v["risk"] in("High","Very high") and rnd.random()<0.7
-            v["lastVisit"]=f"{rnd.randint(1,28):02d}/{rnd.choice(['06','07','08','09'])}/2026"
-            v["flags"]=rnd.sample(FLAGS_RSO,2)
-            v["team"]="Management of Sexual and Violent Offenders"
-            if rnd.random()<0.2: v["window"]=[540,780]
-        elif t=="bail":
-            v["ref"]=f"NICHE-MOCK-OCC-{seq[t]:06d}";v["mins"]=10;v["overdue"]=False;v["spec"]=False
-            v["flags"]=rnd.sample(FLAGS_BAIL,2);v["team"]="Custody and case progression";v["risk"]=""
-            v["bailTo"]=f"{rnd.randint(1,28):02d}/{rnd.choice(['12','01'])}/202{rnd.choice(['6','7'])}"
+        hv.append(mkv(hub,t,area,i))
+    # device checks: most at a registered offender's own address (same person, a second team)
+    rsos=[v for v in hv if v["type"]=="rso"]; rnd.shuffle(rsos)
+    for k in range(e):
+        if k<len(rsos) and rnd.random()<0.75:
+            r=rsos[k];ar=next(x for x in areas if x[0]==r["area"]);hv.append(mkv(hub,"device",ar,r["node"],r["initials"]))
         else:
-            v["ref"]=f"DVDS-MOCK-{seq[t]:05d}";v["mins"]=30;v["overdue"]=rnd.random()<0.2;v["spec"]=False;v["risk"]=""
-            f=rnd.sample(FLAGS_DVDS,2);v["flags"]=f;v["team"]="Domestic Abuse Unit"
-            if any("10:00 to 14:00" in x for x in f): v["window"]=[600,840]
-            v["route"]="Right to Know" if any("Right to Know" in x for x in f) else "Right to Ask"
-            v["flags"]=[x for x in f if not x.startswith("Right to")] or [f[0]]
-            v["applied"]=f"{rnd.randint(1,28):02d}/10/2026"
-        visits.append(v)
+            ar=rnd.choice(areas);i=pick(ar,hub)
+            if i is not None: hv.append(mkv(hub,"device",ar,i))
+    # some IOM nominals are also on bail: same address, two teams
+    ioms=[v for v in hv if v["type"]=="iom"]
+    for r in ioms[:2]:
+        ar=next(x for x in areas if x[0]==r["area"]);hv.append(mkv(hub,"bail",ar,r["node"],r["initials"]))
+    for n,v in enumerate(hv): v["id"]=f"{hub}{n+1:02d}"
+    visits.extend(hv)
 print(len(visits),collections.Counter((v["hub"],v["type"]) for v in visits))
 data={"graph":b64,"names":names,"stations":ST,"visits":visits}
 json.dump(data,open("appdata.json","w"),separators=(",",":"))
