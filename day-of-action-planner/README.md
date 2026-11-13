@@ -64,6 +64,16 @@ All the times on site can be changed on the day.
   - an on-scene checklist.
 
   The crew then moves on to the next stop and finally back to base.
+- **Joint working dashboard.** The header button opens it. It shows:
+  - visits planned against demand;
+  - shared addresses done in one trip;
+  - officer driving hours and miles saved against each team planning alone. The "alone" figures replan the same visits with same-team crews from each team's own stations;
+  - crew trips;
+  - FTE released and the value of that time a year, from editable assumptions: days a year, hours per FTE, manual planning hours and cost per hour;
+  - how each crew's shift is used (on site, driving, waiting, spare);
+  - demand by team;
+  - the capacity gap;
+  - an illustrative usage trend for the pilot.
 - **Roster sync (simulated).** The header shows a sync from GRS (who is on duty) alongside Niche and ViSOR.
 
 ## For a production build
@@ -75,6 +85,7 @@ All the times on site can be changed on the day.
 | Locked down | Force sign-in (Microsoft Entra ID) with roles. Supervisors see their area. Officers see only their own crew's visits, released at shift start and withdrawn at shift end. Every view and change is audited. DPIA, MoPI-compliant retention and force security accreditation are needed before go-live. |
 | Sat nav on the phone | An app on force-managed phones under mobile device management. It uses GPS for turn-by-turn directions, re-routes, and moves on to the next visit automatically. Nothing is stored on the device after the shift. |
 | Briefing at the door | Subject, PNC and Niche warning markers, current conditions, what to look out for, and an on-scene checklist. Results are written back to ViSOR or Niche. |
+| Dashboard on live data | The same measures from real outcomes: visits completed rather than planned, actual miles from vehicle telematics, time on site from the phone app, and trends over weeks for the Senior Management Team. |
 | Live view for supervisors | Each crew's position and progress, so visits can be moved if a crew is pulled to an incident. |
 | Routing and mapping | A routing engine (OSRM, GraphHopper or Valhalla) hosted on the force network, with Ordnance Survey mapping under the Public Sector Geospatial Agreement. |
 
