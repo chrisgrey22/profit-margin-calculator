@@ -1,0 +1,570 @@
+<title>Peter's Energy</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+/* Layout: one calm column like a household ledger; meter-style summary strip on top, four plain tabs below. */
+:root{
+  --bg:#f3f5f7; --panel:#ffffff; --ink:#15212b; --muted:#566573; --line:#d6dde3;
+  --accent:#0f5f6b; --accent-ink:#ffffff; --elec:#c98a00; --gas:#2f63c9;
+  --good:#1f7a43; --good-bg:#e5f4ea; --warn:#9a5b00; --warn-bg:#fff2d9; --bad:#a3302a; --bad-bg:#fbe7e5;
+  --field:#ffffff;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", Verdana, system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f161c; --panel:#18222b; --ink:#e8eef2; --muted:#9fb0bd; --line:#2c3a46;
+  --accent:#5cc3cf; --accent-ink:#0b1a1e; --elec:#f0b83a; --gas:#7aa5ff;
+  --good:#6fd296; --good-bg:#143222; --warn:#f3c26b; --warn-bg:#3a2b10; --bad:#ff8f86; --bad-bg:#3b1a18;
+  --field:#101a22; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0f161c; --panel:#18222b; --ink:#e8eef2; --muted:#9fb0bd; --line:#2c3a46;
+  --accent:#5cc3cf; --accent-ink:#0b1a1e; --elec:#f0b83a; --gas:#7aa5ff;
+  --good:#6fd296; --good-bg:#143222; --warn:#f3c26b; --warn-bg:#3a2b10; --bad:#ff8f86; --bad-bg:#3b1a18;
+  --field:#101a22; color-scheme:dark }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;margin:0}
+.wrap{max-width:980px;margin:0 auto;padding-block:20px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:2.1rem;font-weight:800;letter-spacing:-.01em}
+h2{font-size:1.45rem;font-weight:800}
+h3{font-size:1.1rem;font-weight:600}
+p{margin:0;max-width:68ch}
+a{color:var(--accent)}
+.muted{color:var(--muted)}
+.small{font-size:.9rem}
+.num{font-variant-numeric:tabular-nums}
+header.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px}
+.save-state{font-size:.9rem;color:var(--muted)}
+.alert{border:2px solid var(--warn);background:var(--warn-bg);border-radius:10px;padding:12px 16px;display:grid;gap:4px;margin-bottom:16px}
+.alert strong{color:var(--warn)}
+.meter{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:18px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:2px;min-width:0}
+.tile .lbl{font-size:.82rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.tile .val{font-family:var(--display);font-size:1.7rem;font-weight:800;font-variant-numeric:tabular-nums}
+.tile.elec .val{color:var(--elec)} .tile.gas .val{color:var(--gas)}
+.tile .sub{font-size:.88rem;color:var(--muted)}
+nav.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:2px solid var(--line);margin-bottom:20px}
+nav.tabs button{font:inherit;font-weight:700;background:none;border:0;border-bottom:4px solid transparent;margin-bottom:-2px;padding:10px 14px;color:var(--muted);cursor:pointer;border-radius:8px 8px 0 0}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+nav.tabs button:hover{color:var(--ink)}
+section.view{display:grid;gap:20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;gap:14px;min-width:0}
+.example-note{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:8px 12px;font-weight:700;font-size:.95rem}
+form.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px 14px;align-items:end}
+label{display:grid;gap:4px;font-weight:700;font-size:.95rem}
+label .hint{font-weight:400;color:var(--muted);font-size:.82rem}
+input,select{font:inherit;font-size:1rem;padding:10px 12px;border:2px solid var(--line);border-radius:8px;background:var(--field);color:var(--ink);width:100%;min-width:0}
+input:focus,select:focus,button:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.btn{font:inherit;font-weight:700;font-size:1rem;padding:11px 18px;border-radius:8px;border:2px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.small{padding:6px 10px;font-size:.9rem}
+.btn.danger{border-color:var(--bad);background:var(--bad);color:#fff}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-size:.82rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td.e{color:var(--elec);font-weight:700} td.g{color:var(--gas);font-weight:700}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.8rem;font-weight:700;border:1px solid currentColor}
+.pill.fixed{color:var(--accent)} .pill.variable{color:var(--warn)} .pill.tracker{color:var(--gas)} .pill.ref{color:var(--muted)} .pill.current{color:var(--good)}
+.best td{background:var(--good-bg)}
+.save{color:var(--good);font-weight:700} .cost{color:var(--bad);font-weight:700}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--body);font-size:12px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.92rem}
+.sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px}
+.insights{display:grid;gap:10px;padding:0;margin:0;list-style:none}
+.insights li{padding:10px 14px;border-left:4px solid var(--accent);background:var(--bg);border-radius:0 8px 8px 0}
+.verdict{border-radius:10px;padding:14px 16px;display:grid;gap:6px}
+.verdict.good{background:var(--good-bg);border:2px solid var(--good)}
+.verdict.warn{background:var(--warn-bg);border:2px solid var(--warn)}
+.verdict.bad{background:var(--bad-bg);border:2px solid var(--bad)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.two>*{min-width:0}
+ol.steps{margin:0;padding-left:1.3em;display:grid;gap:6px}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{font:inherit;font-weight:700;background:var(--panel);color:var(--muted);border:0;padding:6px 14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:8px;font-weight:700;z-index:20}
+details summary{cursor:pointer;font-weight:700}
+@media (prefers-reduced-motion:no-preference){.card{transition:border-color .2s}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Peter's Energy</h1>
+      <p class="muted">Gas and electricity bills, what they cost, and whether a better deal is out there.</p>
+    </div>
+    <div class="save-state" id="saveState">Loading your figures…</div>
+  </header>
+
+  <div class="alert" role="note">
+    <div><strong>Prices go up on 1 January 2027.</strong> Ofgem announced on 25 November 2026 that the price cap rises 26% (typical home £1,723 → £2,166 a year).</div>
+    <div class="small">If you are on a standard variable tariff, or your fixed deal ends soon, now is a good time to compare fixed deals. See the <b>Fix or flex?</b> tab.</div>
+  </div>
+
+  <div class="meter" id="meter"></div>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="bills" aria-selected="true" id="tab-bills">1. My bills</button>
+    <button role="tab" data-tab="usage" aria-selected="false" id="tab-usage">2. Usage &amp; cost</button>
+    <button role="tab" data-tab="compare" aria-selected="false" id="tab-compare">3. Compare deals</button>
+    <button role="tab" data-tab="fix" aria-selected="false" id="tab-fix">4. Fix or flex?</button>
+  </nav>
+
+  <!-- BILLS -->
+  <section class="view" id="view-bills">
+    <div class="card">
+      <h2>Add a month from your bill</h2>
+      <p class="muted">Your bill shows how many <b>kWh</b> you used and what it cost. Enter one month at a time. Leave gas blank if you have none.</p>
+      <form class="grid" id="billForm">
+        <label for="bMonth">Month<input type="month" id="bMonth" required></label>
+        <label for="bSupplier">Supplier<input type="text" id="bSupplier" placeholder="e.g. British Gas"></label>
+        <label for="bEk">Electricity used<span class="hint">kWh</span><input type="number" id="bEk" min="0" step="0.1" inputmode="decimal"></label>
+        <label for="bEc">Electricity cost<span class="hint">£ total for the month</span><input type="number" id="bEc" min="0" step="0.01" inputmode="decimal"></label>
+        <label for="bGk">Gas used<span class="hint">kWh (converter below)</span><input type="number" id="bGk" min="0" step="0.1" inputmode="decimal"></label>
+        <label for="bGc">Gas cost<span class="hint">£ total for the month</span><input type="number" id="bGc" min="0" step="0.01" inputmode="decimal"></label>
+        <button class="btn" type="submit" id="billSubmit">Save this month</button>
+      </form>
+      <details>
+        <summary>My gas bill shows cubic metres (m³) or cubic feet, not kWh</summary>
+        <div class="row" style="margin-top:10px">
+          <label for="cvVal" style="max-width:200px">Units used<input type="number" id="cvVal" min="0" step="0.1"></label>
+          <label for="cvUnit" style="max-width:220px">Unit type<select id="cvUnit"><option value="m3">Cubic metres (m³)</option><option value="ft3">Hundreds of cubic feet</option></select></label>
+          <div><div class="small muted">That is about</div><div id="cvOut" class="num" style="font-weight:700;font-size:1.2rem">— kWh</div></div>
+          <button class="btn ghost small" type="button" id="cvUse">Use this for gas</button>
+        </div>
+        <p class="small muted" style="margin-top:8px">Uses the standard UK formula: m³ × 1.02264 × 39.5 ÷ 3.6. Your bill's calorific value may be slightly different.</p>
+      </details>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between"><h2>Saved months</h2><span class="muted small" id="billCount"></span></div>
+      <div id="billsExample"></div>
+      <div class="tablewrap"><table id="billTable"></table></div>
+    </div>
+  </section>
+
+  <!-- USAGE -->
+  <section class="view" id="view-usage" hidden>
+    <div class="card chart">
+      <div class="row" style="justify-content:space-between">
+        <h2>Month by month</h2>
+        <div class="seg" role="group" aria-label="Show"><button type="button" data-mode="cost" aria-pressed="true" id="modeCost">£ cost</button><button type="button" data-mode="kwh" aria-pressed="false" id="modeKwh">kWh used</button></div>
+      </div>
+      <div id="usageExample"></div>
+      <div class="legend"><span><span class="sw" style="background:var(--elec)"></span>Electricity</span><span><span class="sw" style="background:var(--gas)"></span>Gas</span></div>
+      <div id="chart"></div>
+    </div>
+    <div class="two">
+      <div class="card"><h2>What this tells you</h2><ul class="insights" id="insights"></ul></div>
+      <div class="card"><h2>Price you actually paid</h2><p class="small muted">Cost per kWh including the daily standing charge. Higher in summer is normal because the standing charge is spread over less use.</p><div class="tablewrap"><table id="ppkTable"></table></div></div>
+    </div>
+  </section>
+
+  <!-- COMPARE -->
+  <section class="view" id="view-compare" hidden>
+    <div class="card">
+      <h2>Your yearly usage</h2>
+      <p class="muted">Worked out from your bills. Comparison sites ask for these two numbers.</p>
+      <form class="grid" id="usageForm">
+        <label for="uE">Electricity a year<span class="hint" id="uEhint">kWh</span><input type="number" id="uE" min="0" step="1"></label>
+        <label for="uG">Gas a year<span class="hint" id="uGhint">kWh</span><input type="number" id="uG" min="0" step="1"></label>
+        <label for="uHasGas">Gas supply<select id="uHasGas"><option value="yes">I have gas</option><option value="no">Electricity only</option></select></label>
+        <button class="btn ghost" type="button" id="uReset">Use figures from my bills</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Ranked for your usage</h2>
+      <p class="small muted">Yearly cost = kWh × unit rate + 365 × standing charge, for each fuel. Rates include VAT, as shown on quotes.</p>
+      <div class="tablewrap"><table id="rankTable"></table></div>
+      <div id="rankNote"></div>
+    </div>
+
+    <div class="card">
+      <h2 id="quoteHeading">Add a quote or your current deal</h2>
+      <p class="muted">Copy the four rates from a comparison site, a supplier's website, or your own bill. Ask the supplier for the "tariff information label" if you can't find them.</p>
+      <form class="grid" id="quoteForm">
+        <label for="qSupplier">Supplier<input type="text" id="qSupplier" required placeholder="e.g. Octopus"></label>
+        <label for="qName">Tariff name<input type="text" id="qName" placeholder="e.g. 12M Fixed Nov 2026"></label>
+        <label for="qType">Type<select id="qType"><option value="fixed">Fixed</option><option value="variable">Variable (price cap)</option><option value="tracker">Tracker</option></select></label>
+        <label for="qMonths">Length<span class="hint">months (fixed only)</span><input type="number" id="qMonths" min="0" step="1"></label>
+        <label for="qEu">Electricity unit rate<span class="hint">pence per kWh</span><input type="number" id="qEu" min="0" step="0.01" required></label>
+        <label for="qEs">Electricity standing charge<span class="hint">pence per day</span><input type="number" id="qEs" min="0" step="0.01" required></label>
+        <label for="qGu">Gas unit rate<span class="hint">pence per kWh</span><input type="number" id="qGu" min="0" step="0.01"></label>
+        <label for="qGs">Gas standing charge<span class="hint">pence per day</span><input type="number" id="qGs" min="0" step="0.01"></label>
+        <label for="qExit">Exit fee<span class="hint">£ total, if you leave early</span><input type="number" id="qExit" min="0" step="1"></label>
+        <label for="qCurrent">This is<select id="qCurrent"><option value="no">A quote I'm considering</option><option value="yes">My current deal</option></select></label>
+        <div class="row"><button class="btn" type="submit" id="quoteSubmit">Add to comparison</button><button class="btn ghost" type="button" id="quoteCancel" hidden>Cancel</button></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- FIX OR FLEX -->
+  <section class="view" id="view-fix" hidden>
+    <div class="card">
+      <h2>Fixed or flexible: the short version</h2>
+      <div class="two">
+        <div class="grid" style="display:grid;gap:6px"><h3>Fixed</h3><p>Your unit rates and standing charges are locked for 12–24 months. Your bill still goes up and down with how much you use, but the <i>price</i> doesn't change. Usually an exit fee if you leave early.</p></div>
+        <div class="grid" style="display:grid;gap:6px"><h3>Flexible (standard variable)</h3><p>Prices follow Ofgem's price cap, which changes every three months (January, April, July, October). No exit fee. Cheaper when prices fall, dearer when they rise.</p></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>For your usage</h2>
+      <div id="verdicts" style="display:grid;gap:12px"></div>
+    </div>
+
+    <div class="two">
+      <div class="card">
+        <h2>Where to look for deals</h2>
+        <p class="small muted">Use your yearly kWh from tab 3. These are Ofgem-accredited or well-known independent sites.</p>
+        <ul class="insights">
+          <li><a href="https://www.moneysavingexpert.com/cheapenergyclub/" target="_blank" rel="noopener">MoneySavingExpert Cheap Energy Club</a><br><span class="small muted">Also sends a reminder when your fix is ending.</span></li>
+          <li><a href="https://www.uswitch.com/gas-electricity/" target="_blank" rel="noopener">Uswitch</a></li>
+          <li><a href="https://www.comparethemarket.com/energy/" target="_blank" rel="noopener">Compare the Market</a></li>
+          <li><a href="https://www.ofgem.gov.uk/information-consumers/energy-advice-households/get-energy-price-cap-standing-charges-and-unit-rates-region" target="_blank" rel="noopener">Ofgem: price cap rates for South Wales</a></li>
+          <li><a href="https://www.which.co.uk/reviews/energy-companies/article/best-and-worst-energy-companies" target="_blank" rel="noopener">Which? supplier customer service ratings</a></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Before you switch</h2>
+        <ol class="steps">
+          <li>Check your current deal's exit fee and end date. Most suppliers let you leave free in the last 49 days of a fix.</li>
+          <li>Compare by <b>your</b> yearly cost in tab 3, not the "typical household" price in adverts.</li>
+          <li>Look at the standing charge too. Low users can lose out on a cheap unit rate with a high daily charge.</li>
+          <li>Pay by monthly Direct Debit for the lowest prices.</li>
+          <li>Take a meter reading on the day you switch and keep a photo of it.</li>
+          <li>Switching takes about 5 working days and the supply is not interrupted.</li>
+          <li>Never give bank details to anyone who cold-calls you about switching. Go to the supplier's website yourself.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Market snapshot, November 2026</h2>
+      <p class="small muted">Researched 25 November 2026 for a typical home (2,700 kWh electricity, 11,500 kWh gas). Deals change daily and get pulled quickly when the cap rises, so check the live price before you decide.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Deal</th><th>Type</th><th>Typical yearly cost</th><th>Exit fee</th></tr></thead>
+        <tbody>
+          <tr><td>Price cap from 1 Jan 2027 (GB average)</td><td><span class="pill variable">Variable</span></td><td>£2,166</td><td>None</td></tr>
+          <tr><td>Price cap now, Oct–Dec 2026 (South Wales)</td><td><span class="pill variable">Variable</span></td><td>£1,744</td><td>None</td></tr>
+          <tr><td>Utility Warehouse Fixed Saver (11 months)</td><td><span class="pill fixed">Fixed</span></td><td>about £1,803</td><td>£150</td></tr>
+          <tr><td>Outfox the Market Fix'd (18 or 24 months)</td><td><span class="pill fixed">Fixed</span></td><td>about £1,810</td><td>£150 / £200</td></tr>
+          <tr><td>Sainsbury's Energy 12-month fix</td><td><span class="pill fixed">Fixed</span></td><td>about £1,885</td><td>Check</td></tr>
+          <tr><td>Good Energy 18-month fix</td><td><span class="pill fixed">Fixed</span></td><td>about £1,887</td><td>Check</td></tr>
+          <tr><td>Octopus Tracker / So Energy Tracker</td><td><span class="pill tracker">Tracker</span></td><td>varies daily</td><td>None / check</td></tr>
+        </tbody>
+      </table></div>
+      <p class="small muted">Sources: Ofgem, Energy Review, LocalEnergyPrices, Energy Plus, MoneySavingExpert. Trackers follow the wholesale price each day, so they will rise too when wholesale prices rise.</p>
+    </div>
+  </section>
+
+  <p class="small muted" style="margin-top:28px" id="footNote">Your figures are saved automatically. Figures in this app are guidance to help you compare, not financial advice.</p>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- reference tariffs (rates include VAT where charged) ---------- */
+const REFS=[
+  {id:"ref-now",ref:true,supplier:"Price cap now",name:"Oct–Dec 2026, South Wales",type:"variable",months:0,eU:26.55,eS:55.41,gU:8.09,gS:29.96,exit:0},
+  {id:"ref-jan",ref:true,supplier:"Price cap from 1 Jan",name:"Jan–Mar 2027, GB average",type:"variable",months:0,eU:32.69,eS:54.77,gU:10.96,gS:29.65,exit:0}
+];
+const TYPICAL={e:2700,g:11500};
+const W_E=[10,9,9,8,7.5,7,7,7,7.5,8.5,9.5,10];
+const W_G=[16,14,12,8,5,3,2.5,2.5,3.5,7,12,14.5];
+const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+/* Example figures, shown only until the first real bill is saved. */
+const EXAMPLE=(()=>{const out=[];const e=[290,255,245,205,185,170,165,170,185,220,255,290];const g=[1750,1550,1300,850,520,300,240,240,380,780,1300,1650];
+  const now=new Date();for(let i=12;i>=1;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);const m=d.getMonth();
+  out.push({id:"ex"+i,month:d.getFullYear()+"-"+String(m+1).padStart(2,"0"),supplier:"Example",eK:e[m],eC:+(e[m]*0.2655+30*0.5541).toFixed(2),gK:g[m],gC:+(g[m]*0.0809+30*0.2996).toFixed(2)});}return out;})();
+
+let state={bills:[],quotes:[],usage:null,hasGas:true};
+let mode="local", db=null, docRef=null, chartMode="cost", editingQuote=null;
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+const gbp=v=>"£"+(Math.round(v)).toLocaleString("en-GB");
+const gbp2=v=>"£"+v.toLocaleString("en-GB",{minimumFractionDigits:2,maximumFractionDigits:2});
+const kwh=v=>Math.round(v).toLocaleString("en-GB")+" kWh";
+const num=v=>{const n=parseFloat(v);return isFinite(n)?n:0};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function el(tag,attrs,...kids){const n=document.createElement(tag);if(attrs)for(const k in attrs){if(k==="class")n.className=attrs[k];else if(k==="text")n.textContent=attrs[k];else if(k.startsWith("on"))n.addEventListener(k.slice(2),attrs[k]);else n.setAttribute(k,attrs[k]);}
+  for(const c of kids){if(c==null)continue;n.append(c.nodeType?c:document.createTextNode(String(c)));}return n;}
+function monthLabel(ym){const [y,m]=ym.split("-");return MONTHS[+m-1]+" "+y}
+function toast(msg){const t=$("toast");t.textContent=msg;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2600)}
+
+/* ---------- storage: shared db when available, otherwise this device ---------- */
+const LS="peters-energy-v1";
+function loadLocal(){try{const s=JSON.parse(localStorage.getItem(LS)||"null");if(s)state=Object.assign(state,s)}catch(e){}}
+function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){}}
+let saving=Promise.resolve();
+function persist(){
+  if(mode==="db"&&docRef){
+    const body=JSON.parse(JSON.stringify(state));
+    saving=saving.then(()=>docRef.set(body)).then(()=>setSaveState("Saved")).catch(err=>{
+      if(err&&err.code==="invalid_argument"){mode="local";saveLocal();setSaveState("Saved on this device only");toast("Saved on this device only");}
+      else setSaveState("Couldn't save just now. Try again in a minute.");
+    });
+  } else {saveLocal();setSaveState(mode==="local"?"Saved on this device":"Saved")}
+}
+function setSaveState(t){$("saveState").textContent=t}
+
+async function initStore(){
+  loadLocal();
+  renderAll();
+  if(!(window.claude&&window.claude.use)){setSaveState("Saved on this device");return}
+  try{db=await window.claude.use("db")}catch(e){db=null}
+  if(!db){setSaveState("Saved on this device");return}
+  mode="db";docRef=db.doc("household/peter");
+  setSaveState("Connecting…");
+  const timer=setTimeout(()=>setSaveState("Can't reach saved figures yet. Showing what's on this device."),10000);
+  docRef.onSnapshot(snap=>{
+    if(!snap.metadata.fromCache)clearTimeout(timer);
+    if(snap.exists){const d=snap.data();state={bills:(d.bills||[]).slice(),quotes:(d.quotes||[]).slice(),usage:d.usage||null,hasGas:d.hasGas!==false};}
+    if(!snap.metadata.hasPendingWrites)setSaveState("Saved");
+    renderAll();
+  },err=>{clearTimeout(timer);mode="local";setSaveState("Saved on this device");});
+}
+
+/* ---------- calculations ---------- */
+function realBills(){return state.bills.slice().sort((a,b)=>a.month<b.month?-1:1)}
+function shownBills(){return state.bills.length?realBills():EXAMPLE}
+function isExample(){return state.bills.length===0}
+function last12(bills){return bills.slice(-12)}
+function annualFromBills(bills){
+  const b=last12(bills);if(!b.length)return {e:TYPICAL.e,g:TYPICAL.g,est:true,n:0};
+  let e=0,g=0,we=0,wg=0;for(const x of b){const m=+x.month.split("-")[1]-1;e+=num(x.eK);g+=num(x.gK);we+=W_E[m];wg+=W_G[m];}
+  if(b.length>=12)return {e,g,est:false,n:12};
+  return {e:we?e/we*100:0,g:wg?g/wg*100:0,est:true,n:b.length};
+}
+function usageBasis(){
+  const auto=annualFromBills(shownBills());
+  if(state.usage)return {e:num(state.usage.e),g:state.hasGas?num(state.usage.g):0,manual:true,auto};
+  return {e:auto.e,g:state.hasGas?auto.g:0,manual:false,auto};
+}
+function yearlyCost(t,u){
+  const e=u.e*t.eU/100+365*t.eS/100;
+  const g=state.hasGas?(u.g*num(t.gU)/100+365*num(t.gS)/100):0;
+  return {e,g,total:e+g};
+}
+
+/* ---------- renderers ---------- */
+function renderMeter(){
+  const b=shownBills(),y=last12(b);const sumE=y.reduce((s,x)=>s+num(x.eC),0),sumG=y.reduce((s,x)=>s+num(x.gC),0);
+  const a=annualFromBills(b);const m=$("meter");m.textContent="";
+  const lab=isExample()?" (example)":"";
+  const tile=(cls,l,v,s)=>el("div",{class:"tile "+cls},el("span",{class:"lbl",text:l}),el("span",{class:"val",text:v}),el("span",{class:"sub",text:s}));
+  m.append(
+    tile("","Spent, last "+y.length+" months"+lab,gbp(sumE+sumG),"about "+gbp((sumE+sumG)/Math.max(1,y.length))+" a month"),
+    tile("elec","Electricity a year",kwh(a.e),(a.est?"estimated · ":"")+pct(a.e,TYPICAL.e)+" a typical home"),
+    tile("gas","Gas a year",state.hasGas?kwh(a.g):"No gas",state.hasGas?((a.est?"estimated · ":"")+pct(a.g,TYPICAL.g)+" a typical home"):"electricity only"),
+  );
+  const u=usageBasis();const jan=yearlyCost(REFS[1],u).total;
+  m.append(tile("","On the price cap from January",gbp(jan)+"/yr","for your usage, about "+gbp(jan/12)+" a month"));
+}
+function pct(v,t){if(!t)return"";const p=Math.round((v/t-1)*100);return p===0?"same as":(Math.abs(p)+"% "+(p>0?"more than":"less than"))}
+
+function renderBills(){
+  const t=$("billTable");t.textContent="";
+  const ex=$("billsExample");ex.textContent="";
+  if(isExample())ex.append(el("div",{class:"example-note",text:"These are example figures so you can see how it works. They disappear when you save your first month."}));
+  const bills=shownBills().slice().reverse();
+  $("billCount").textContent=isExample()?"":(state.bills.length+" month"+(state.bills.length===1?"":"s")+" saved");
+  t.append(el("thead",null,el("tr",null,...["Month","Supplier","Elec kWh","Elec £","Gas kWh","Gas £","Total £",""].map(h=>el("th",{text:h})))));
+  const tb=el("tbody");
+  for(const b of bills){
+    const actions=el("td");
+    if(!isExample()){
+      const del=el("button",{class:"btn ghost small",type:"button",text:"Delete"});
+      del.addEventListener("click",()=>{actions.textContent="";actions.append(el("span",{class:"small",text:"Delete? "}),
+        el("button",{class:"btn danger small",type:"button",text:"Yes",onclick:()=>{state.bills=state.bills.filter(x=>x.id!==b.id);persist();renderAll();toast("Month deleted")}})," ",
+        el("button",{class:"btn ghost small",type:"button",text:"No",onclick:renderBills}))});
+      const ed=el("button",{class:"btn ghost small",type:"button",text:"Edit",onclick:()=>{ $("bMonth").value=b.month;$("bSupplier").value=b.supplier||"";$("bEk").value=b.eK??"";$("bEc").value=b.eC??"";$("bGk").value=b.gK??"";$("bGc").value=b.gC??"";$("bMonth").focus();window.scrollTo({top:$("billForm").getBoundingClientRect().top+scrollY-80,behavior:"smooth"})}});
+      actions.append(ed," ",del);
+    }
+    tb.append(el("tr",null,el("td",{text:monthLabel(b.month)}),el("td",{text:b.supplier||"—"}),el("td",{class:"e",text:num(b.eK).toLocaleString("en-GB")}),el("td",{text:gbp2(num(b.eC))}),
+      el("td",{class:"g",text:b.gK?num(b.gK).toLocaleString("en-GB"):"—"}),el("td",{text:b.gC?gbp2(num(b.gC)):"—"}),el("td",{text:gbp2(num(b.eC)+num(b.gC))}),actions));
+  }
+  t.append(tb);
+}
+
+function renderChart(){
+  const bills=shownBills().slice(-24);const box=$("chart");box.textContent="";
+  const ex=$("usageExample");ex.textContent="";
+  if(isExample())ex.append(el("div",{class:"example-note",text:"Example figures. Add your bills in tab 1 to see your own."}));
+  const W=900,H=320,L=56,R=12,T=14,B=40;const n=bills.length;const bw=Math.min((W-L-R)/n,72);
+  const val=b=>chartMode==="cost"?[num(b.eC),num(b.gC)]:[num(b.eK),num(b.gK)];
+  const max=Math.max(1,...bills.map(b=>val(b)[0]+val(b)[1]));
+  const step=niceStep(max/4);const top=Math.ceil(max/step)*step;
+  const y=v=>T+(H-T-B)*(1-v/top);
+  const NS="http://www.w3.org/2000/svg";const svg=document.createElementNS(NS,"svg");svg.setAttribute("viewBox",`0 0 ${W} ${H}`);svg.setAttribute("role","img");
+  svg.setAttribute("aria-label",(chartMode==="cost"?"Monthly cost":"Monthly kWh")+" chart");
+  const mk=(t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);svg.append(e);return e};
+  for(let v=0;v<=top+1e-9;v+=step){mk("line",{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:"var(--line)","stroke-width":1});
+    const tx=mk("text",{x:L-8,y:y(v)+4,"text-anchor":"end"});tx.textContent=chartMode==="cost"?"£"+v:Math.round(v).toLocaleString("en-GB");}
+  bills.forEach((b,i)=>{const [e,g]=val(b);const x=L+i*bw+bw*0.15,w=bw*0.7;
+    if(e>0)mk("rect",{x,y:y(e),width:w,height:y(0)-y(e),fill:"var(--elec)",rx:2}).append(title(monthLabel(b.month)+" electricity: "+(chartMode==="cost"?gbp2(e):kwh(e))));
+    if(g>0)mk("rect",{x,y:y(e+g),width:w,height:y(e)-y(e+g),fill:"var(--gas)",rx:2}).append(title(monthLabel(b.month)+" gas: "+(chartMode==="cost"?gbp2(g):kwh(g))));
+    if(n<=13||i%2===0){const m=+b.month.split("-")[1]-1;const t=mk("text",{x:x+w/2,y:H-B+18,"text-anchor":"middle"});t.textContent=MONTHS[m];
+      if(m===0||i===0){const t2=mk("text",{x:x+w/2,y:H-B+33,"text-anchor":"middle"});t2.textContent=b.month.slice(0,4);}}
+  });
+  function title(s){const t=document.createElementNS(NS,"title");t.textContent=s;return t}
+  box.append(svg);
+}
+function niceStep(raw){const p=Math.pow(10,Math.floor(Math.log10(raw||1)));for(const m of [1,2,2.5,5,10])if(raw<=m*p)return m*p;return 10*p}
+
+function renderInsights(){
+  const b=shownBills();const ul=$("insights");ul.textContent="";const add=t=>ul.append(el("li",{text:t}));
+  if(isExample())add("Example figures shown. Your own insights appear once you save your bills.");
+  const y=last12(b);if(!y.length)return;
+  const tot=x=>num(x.eC)+num(x.gC);
+  const hi=y.reduce((a,x)=>tot(x)>tot(a)?x:a),lo=y.reduce((a,x)=>tot(x)<tot(a)?x:a);
+  add(`Your dearest month was ${monthLabel(hi.month)} at ${gbp2(tot(hi))}; the cheapest was ${monthLabel(lo.month)} at ${gbp2(tot(lo))}.`);
+  const winter=y.filter(x=>[10,11,0,1,2].includes(+x.month.split("-")[1]-1));
+  const sumAll=y.reduce((s,x)=>s+tot(x),0),sumW=winter.reduce((s,x)=>s+tot(x),0);
+  if(winter.length&&y.length>=10)add(`November to March makes up ${Math.round(sumW/sumAll*100)}% of your yearly spend. Paying a steady monthly Direct Debit spreads this out.`);
+  const a=annualFromBills(b);
+  add(`You use about ${kwh(a.e)} of electricity a year, ${pct(a.e,TYPICAL.e)} the typical home (2,700 kWh).`);
+  if(state.hasGas&&a.g)add(`You use about ${kwh(a.g)} of gas a year, ${pct(a.g,TYPICAL.g)} the typical home (11,500 kWh).`);
+  if(a.est)add(`Based on ${a.n} month${a.n===1?"":"s"} of bills, adjusted for the time of year. Add 12 months for an exact figure.`);
+  const rb=realBills();
+  if(rb.length>=24){const prev=rb.slice(-24,-12),cur=rb.slice(-12);const pe=prev.reduce((s,x)=>s+num(x.eK),0),ce=cur.reduce((s,x)=>s+num(x.eK),0);
+    const pg=prev.reduce((s,x)=>s+num(x.gK),0),cg=cur.reduce((s,x)=>s+num(x.gK),0);
+    add(`Compared with the year before, electricity use is ${pct(ce,pe)} and gas use is ${pct(cg,pg)}.`.replace(/same as/g,"the same as"));}
+  const u=usageBasis();const jan=yearlyCost(REFS[1],u).total,now=yearlyCost(REFS[0],u).total;
+  add(`If you stay on a variable tariff, the January price cap would add about ${gbp(jan-now)} a year to your bills (${gbp(now)} → ${gbp(jan)}).`);
+}
+
+function renderPPK(){
+  const t=$("ppkTable");t.textContent="";
+  t.append(el("thead",null,el("tr",null,...["Month","Electricity p/kWh","Gas p/kWh"].map(h=>el("th",{text:h})))));
+  const tb=el("tbody");
+  for(const b of last12(shownBills()).slice().reverse()){
+    const e=num(b.eK)?num(b.eC)/num(b.eK)*100:0,g=num(b.gK)?num(b.gC)/num(b.gK)*100:0;
+    tb.append(el("tr",null,el("td",{text:monthLabel(b.month)}),el("td",{class:"e",text:e?e.toFixed(1)+"p":"—"}),el("td",{class:"g",text:g?g.toFixed(1)+"p":"—"})));
+  }
+  t.append(tb);
+}
+
+function allTariffs(){return [...REFS,...state.quotes]}
+function renderCompare(){
+  const u=usageBasis();
+  if(document.activeElement!==$("uE"))$("uE").value=Math.round(u.e);
+  if(document.activeElement!==$("uG"))$("uG").value=Math.round(state.hasGas?(state.usage?num(state.usage.g):u.auto.g):0);
+  $("uG").disabled=!state.hasGas;$("uHasGas").value=state.hasGas?"yes":"no";
+  const src=u.manual?"kWh · typed in by you":(u.auto.n===0?"kWh · typical home (no bills yet)":(isExample()?"kWh · from example figures":(u.auto.est?`kWh · estimated from ${u.auto.n} months`:"kWh · your last 12 months")));
+  $("uEhint").textContent=src;$("uGhint").textContent=src;
+
+  const rows=allTariffs().map(t=>({t,c:yearlyCost(t,u)})).sort((a,b)=>a.c.total-b.c.total);
+  const cur=rows.find(r=>r.t.current);const base=cur||rows.find(r=>r.t.id==="ref-jan");
+  const tbl=$("rankTable");tbl.textContent="";
+  tbl.append(el("thead",null,el("tr",null,...["Tariff","Type","Electricity","Gas","Yearly cost","Monthly",cur?"vs your deal":"vs January cap",""].map(h=>el("th",{text:h})))));
+  const tb=el("tbody");
+  rows.forEach((r,i)=>{
+    const t=r.t;const d=base.c.total-r.c.total;
+    const typ=t.current?el("span",{class:"pill current",text:"Your deal"}):el("span",{class:"pill "+(t.ref?"ref":t.type),text:t.ref?"Reference":(t.type==="fixed"?`Fixed${t.months?" "+t.months+"m":""}`:t.type==="tracker"?"Tracker":"Variable")});
+    const name=el("td",null,el("b",{text:t.supplier}),el("br"),el("span",{class:"small muted",text:t.name||""}));
+    const act=el("td");
+    if(!t.ref){
+      act.append(el("button",{class:"btn ghost small",type:"button",text:"Edit",onclick:()=>startEditQuote(t)})," ");
+      const del=el("button",{class:"btn ghost small",type:"button",text:"Remove"});
+      del.addEventListener("click",()=>{act.textContent="";act.append(el("button",{class:"btn danger small",type:"button",text:"Yes, remove",onclick:()=>{state.quotes=state.quotes.filter(q=>q.id!==t.id);persist();renderAll();toast("Removed")}})," ",el("button",{class:"btn ghost small",type:"button",text:"No",onclick:renderCompare}))});
+      act.append(del);
+    }
+    const diff=r===base?el("span",{class:"muted",text:"—"}):el("span",{class:d>0?"save":"cost",text:(d>0?"saves ":"costs ")+gbp(Math.abs(d))});
+    const tr=el("tr",{class:i===0?"best":""},name,el("td",null,typ),
+      el("td",{text:`${t.eU}p + ${t.eS}p/day`}),el("td",{text:state.hasGas?`${num(t.gU)}p + ${num(t.gS)}p/day`:"—"}),
+      el("td",null,el("b",{text:gbp(r.c.total)})),el("td",{text:gbp(r.c.total/12)}),el("td",null,diff),act);
+    tb.append(tr);
+  });
+  tbl.append(tb);
+  const note=$("rankNote");note.textContent="";
+  if(!state.quotes.length)note.append(el("p",{class:"small muted",text:"Only the two price cap references are listed so far. Add your current deal and two or three quotes below to see how they rank."}));
+  else if(!cur)note.append(el("p",{class:"small muted",text:"Tip: add your current deal (set \"This is\" to \"My current deal\") to see savings against what you pay now."}));
+}
+
+function startEditQuote(t){
+  editingQuote=t.id;$("qSupplier").value=t.supplier;$("qName").value=t.name||"";$("qType").value=t.type;$("qMonths").value=t.months||"";
+  $("qEu").value=t.eU;$("qEs").value=t.eS;$("qGu").value=t.gU??"";$("qGs").value=t.gS??"";$("qExit").value=t.exit||"";$("qCurrent").value=t.current?"yes":"no";
+  $("quoteSubmit").textContent="Save changes";$("quoteCancel").hidden=false;$("quoteHeading").textContent="Edit "+t.supplier;
+  window.scrollTo({top:$("quoteForm").getBoundingClientRect().top+scrollY-120,behavior:"smooth"});
+}
+function resetQuoteForm(){editingQuote=null;$("quoteForm").reset();$("quoteSubmit").textContent="Add to comparison";$("quoteCancel").hidden=true;$("quoteHeading").textContent="Add a quote or your current deal"}
+
+function renderVerdicts(){
+  const u=usageBasis();const box=$("verdicts");box.textContent="";
+  const now=yearlyCost(REFS[0],u).total,jan=yearlyCost(REFS[1],u).total;
+  box.append(el("div",{class:"verdict warn"},el("b",{text:`Staying on a variable tariff: about ${gbp(now)} a year at today's prices, rising to about ${gbp(jan)} a year from 1 January.`}),
+    el("span",{class:"small",text:"That is the price cap for your usage. It will change again on 1 April 2027; Ofgem announces that figure by 23 February."})));
+  const fixes=state.quotes.filter(q=>q.type==="fixed"&&!q.current);
+  if(!fixes.length){box.append(el("p",{class:"muted",text:"Add a fixed deal or two in the Compare tab and each one gets a plain-English verdict here."}));}
+  for(const q of fixes.map(q=>({q,c:yearlyCost(q,u).total})).sort((a,b)=>a.c-b.c)){
+    const d=jan-q.c;const be=(q.c/jan-1)*100;
+    let cls,head,body;
+    if(d>=0){cls="good";head=`${q.q.supplier}${q.q.name?" "+q.q.name:""}: about ${gbp(q.c)} a year. That is ${gbp(d)} a year less than the January price cap.`;
+      body=`This fix wins unless the price cap falls more than ${Math.abs(be).toFixed(0)}% below January's level, on average, for the length of the deal.`;}
+    else{cls=be<8?"warn":"bad";head=`${q.q.supplier}${q.q.name?" "+q.q.name:""}: about ${gbp(q.c)} a year, ${gbp(-d)} more than the January price cap.`;
+      body=`It only pays off if the cap rises a further ${be.toFixed(0)}% or more on average over the deal. You're paying for certainty.`;}
+    const v=el("div",{class:"verdict "+cls},el("b",{text:head}),el("span",{class:"small",text:body}));
+    if(q.q.exit)v.append(el("span",{class:"small",text:`Exit fee £${q.q.exit}. Check you're happy to stay ${q.q.months?q.q.months+" months":"for the term"}.`}));
+    box.append(v);
+  }
+  const cur=state.quotes.find(q=>q.current);
+  if(cur){const c=yearlyCost(cur,u).total;box.append(el("div",{class:"verdict "+(cur.type==="fixed"?"good":"warn")},el("b",{text:`Your current deal (${cur.supplier}): about ${gbp(c)} a year.`}),
+    el("span",{class:"small",text:cur.type==="fixed"?"You're fixed, so January's rise won't affect you until your deal ends. Note the end date and compare again about six weeks before.":"You're on a variable price, so this will go up on 1 January unless you fix."})));}
+}
+
+function renderAll(){renderMeter();renderBills();renderChart();renderInsights();renderPPK();renderCompare();renderVerdicts()}
+
+/* ---------- events ---------- */
+document.querySelectorAll("nav.tabs button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("nav.tabs button").forEach(x=>x.setAttribute("aria-selected",x===b?"true":"false"));
+  document.querySelectorAll("section.view").forEach(s=>s.hidden=s.id!=="view-"+b.dataset.tab);
+  try{sessionStorage.setItem("pe-tab",b.dataset.tab)}catch(e){}
+}));
+try{const t=sessionStorage.getItem("pe-tab");if(t)document.querySelector(`nav.tabs button[data-tab="${t}"]`)?.click()}catch(e){}
+
+$("billForm").addEventListener("submit",e=>{e.preventDefault();
+  const month=$("bMonth").value;if(!month)return;
+  const rec={month,supplier:$("bSupplier").value.trim(),eK:num($("bEk").value),eC:num($("bEc").value),gK:num($("bGk").value),gC:num($("bGc").value)};
+  if(!rec.eK&&!rec.gK){toast("Enter at least the electricity or gas kWh");return}
+  const ex=state.bills.find(b=>b.month===month);
+  if(ex)Object.assign(ex,rec);else state.bills.push(Object.assign({id:uid()},rec));
+  persist();renderAll();toast(ex?"Updated "+monthLabel(month):"Saved "+monthLabel(month));
+  const sup=rec.supplier;$("billForm").reset();$("bSupplier").value=sup;
+  const [y,m]=month.split("-").map(Number);const nx=new Date(y,m,1);$("bMonth").value=nx.getFullYear()+"-"+String(nx.getMonth()+1).padStart(2,"0");
+});
+const cv=()=>{const v=num($("cvVal").value);const m3=$("cvUnit").value==="ft3"?v*2.83:v;return m3*1.02264*39.5/3.6};
+["cvVal","cvUnit"].forEach(id=>$(id).addEventListener("input",()=>{$("cvOut").textContent=cv()?Math.round(cv()).toLocaleString("en-GB")+" kWh":"— kWh"}));
+$("cvUse").addEventListener("click",()=>{if(cv()){$("bGk").value=Math.round(cv());$("bGk").focus()}});
+
+let usageTimer;
+function saveUsage(){clearTimeout(usageTimer);usageTimer=setTimeout(()=>{state.usage={e:num($("uE").value),g:num($("uG").value)};persist();renderAll()},700)}
+$("uE").addEventListener("input",saveUsage);$("uG").addEventListener("input",saveUsage);
+$("uHasGas").addEventListener("change",()=>{state.hasGas=$("uHasGas").value==="yes";persist();renderAll()});
+$("uReset").addEventListener("click",()=>{state.usage=null;persist();renderAll();toast("Using figures from your bills")});
+
+$("quoteForm").addEventListener("submit",e=>{e.preventDefault();
+  const q={supplier:$("qSupplier").value.trim(),name:$("qName").value.trim(),type:$("qType").value,months:num($("qMonths").value),
+    eU:num($("qEu").value),eS:num($("qEs").value),gU:num($("qGu").value),gS:num($("qGs").value),exit:num($("qExit").value),current:$("qCurrent").value==="yes"};
+  if(q.current)state.quotes.forEach(x=>x.current=false);
+  if(editingQuote){const x=state.quotes.find(x=>x.id===editingQuote);if(x)Object.assign(x,q)}else state.quotes.push(Object.assign({id:uid()},q));
+  const was=!!editingQuote;resetQuoteForm();persist();renderAll();toast(was?"Changes saved":"Added to comparison");
+});
+$("quoteCancel").addEventListener("click",resetQuoteForm);
+document.querySelectorAll(".seg button").forEach(b=>b.addEventListener("click",()=>{chartMode=b.dataset.mode;
+  document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));renderChart()}));
+
+(function(){const d=new Date();d.setMonth(d.getMonth()-1);$("bMonth").value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")})();
+initStore();
+})();
+</script>
